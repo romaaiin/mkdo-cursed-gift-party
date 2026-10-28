@@ -215,3 +215,28 @@
   .lobby-title { font-size: 40px; }
 }
 @media (prefers-reduced-motion: reduce) { .fan-card, .game-card { transition: none; } .animate-wobble { animation: none; } }
+
+.lobby-settings { position: absolute; top: 14px; right: 14px; z-index: 10; }
+.settings-overlay { position: fixed; z-index: 50; }
+.settings-dialog { display: block; width: min(380px, 90%); }
+.settings-row { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 16px 0; border-bottom: 1px solid var(--border); font-weight: 600; font-size: 15px; }
+.settings-row:last-child { border-bottom: 0; }
+.game-stage[data-animations="off"] *, .game-stage[data-animations="off"] *::before, .game-stage[data-animations="off"] *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+.game-stage[data-animations="off"] .fan-card:hover, .game-stage[data-animations="off"] .fan-card:focus-within { transform: translateY(var(--fan-y)) rotate(var(--fan-angle)); }
+.rules-header { position: absolute; top: 12px; left: 18px; right: 18px; display: flex; align-items: center; justify-content: space-between; gap: 16px; z-index: 10; }
+.rules-header h1 { min-width: 0; }
+.rules-layout { position: absolute; inset: 70px 28px 22px; display: grid; grid-template-columns: 205px minmax(0, 1fr); gap: 28px; }
+.rules-nav { display: flex; flex-direction: column; gap: 6px; overflow-y: auto; padding: 2px; }
+.rules-nav > button { justify-content: flex-start; height: auto; min-height: 40px; white-space: normal; text-align: left; }
+.rules-article { overflow-y: auto; overscroll-behavior: contain; padding: 6px 16px 18px 2px; scrollbar-color: var(--primary) var(--background); font-size: 15px; line-height: 1.6; }
+.rules-section { padding: 0 0 18px; margin-bottom: 18px; border-bottom: 1px solid var(--border); }
+@media (max-height: 430px) and (orientation: landscape), (max-width: 430px) and (orientation: portrait) {
+  .rules-header { top: 8px; left: 12px; right: 12px; gap: 10px; }
+  .rules-header h1 { font-size: 18px; }
+  .rules-layout { inset: 58px 14px 12px; grid-template-columns: 170px minmax(0, 1fr); gap: 16px; }
+  .rules-nav { gap: 3px; }
+  .rules-nav > button { font-size: 12px; padding: 8px; min-height: 34px; }
+  .rules-article { font-size: 14px; line-height: 1.55; padding-right: 10px; }
+  .rules-article h2 { font-size: 18px; }
+  .settings-row { padding: 12px 0; }
+}
