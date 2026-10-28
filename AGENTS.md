@@ -11,3 +11,4 @@
 
 - Game rules live in pure functions in src/game/engine.ts (immutable state in, new state out) so solo AI and future online mode share one rules engine; covered by src/game/engine.test.ts.
 - Card illustrations are resolved by a presentation-only mapping with CDN asset pointers; do not embed screenshot rules in cards or couple artwork to the rules engine.
+- The lobby and game use a shared landscape stage rotated inside portrait viewports; keep dialogs inside that stage and fan transforms in CSS so hit targets rotate with the visuals.

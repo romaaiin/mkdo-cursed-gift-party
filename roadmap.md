@@ -1,0 +1,3 @@
+- [x] Recomposer la table en paysage avec adversaires autour du tapis.
+- [x] Afficher les illustrations dans une main en éventail et harmoniser le menu.
+- [x] Vérifier sélection, jeu d’une carte, riposte et affichage téléphone/ordinateur.

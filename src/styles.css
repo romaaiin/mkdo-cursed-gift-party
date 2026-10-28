@@ -88,7 +88,7 @@
 
 @utility font-display {
   font-family: var(--font-display);
-  letter-spacing: 0.02em;
+  letter-spacing: 0;
 }
 @utility sticker {
   border: 3px solid var(--ink);
@@ -129,3 +129,89 @@
   box-shadow: var(--glow-neon);
   background: color-mix(in oklab, var(--background) 70%, transparent);
 }
+
+:root {
+  --card-edge: oklch(0.91 0.025 120);
+  --shadow-game-card: 0 5px 10px color-mix(in oklab, var(--ink) 75%, transparent);
+  --table-shade: linear-gradient(180deg, color-mix(in oklab, var(--ink) 35%, transparent), color-mix(in oklab, var(--background) 65%, transparent));
+}
+.landscape-shell { position: fixed; inset: 0; overflow: hidden; background: var(--ink); }
+.game-stage { position: absolute; inset: 0; isolation: isolate; overflow: hidden; background: var(--background); }
+.table-art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .62; z-index: -2; }
+.game-stage::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--table-shade); }
+.game-topbar { position: absolute; top: 10px; left: 14px; right: 14px; display: flex; justify-content: space-between; align-items: center; z-index: 10; }
+.game-brand { font-size: 20px; line-height: 1; color: var(--primary); text-shadow: 2px 2px var(--ink); }
+.game-tools { display: flex; gap: 6px; }
+.opponent { position: absolute; width: 170px; text-align: center; z-index: 2; }
+.opponent-top { top: 44px; left: 50%; transform: translateX(-50%); }
+.opponent-left { left: 18px; top: 37%; }
+.opponent-right { right: 18px; top: 37%; }
+.opponent-name { font-size: 13px; padding: 4px 8px; background: var(--ink); border: 1px solid var(--border); border-radius: 6px; }
+.opponent-active .opponent-name { border-color: var(--primary); box-shadow: var(--glow-neon); }
+.opponent-hand { height: 48px; display: flex; justify-content: center; margin-bottom: 6px; }
+.card-back { display: grid; place-items: center; width: 34px; height: 48px; flex-shrink: 0; border: 2px solid var(--card-edge); border-radius: 5px; background: var(--card); color: var(--primary); box-shadow: var(--shadow-game-card); font-family: var(--font-display); font-size: 11px; }
+.opponent-hand .card-back + .card-back { margin-left: -21px; }
+.card-back::after { content: "MKDO"; transform: rotate(-20deg); border: 1px solid var(--secondary); border-radius: 50%; padding: 8px 1px; }
+.table-center { position: absolute; top: 38%; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 20px; }
+.table-pile { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 10px; }
+.table-pile .card-back { width: 65px; height: 92px; font-size: 17px; box-shadow: 3px 3px 0 var(--card-edge), 6px 6px 0 var(--ink), var(--shadow-game-card); }
+.table-pile .game-card { width: 65px; height: 92px; font-size: 8px; }
+.discard-empty { width: 65px; height: 92px; border: 2px dashed var(--primary); border-radius: 6px; opacity: .45; }
+.turn-status { position: absolute; top: 65%; left: 50%; transform: translateX(-50%); width: 44%; text-align: center; font-size: 11px; text-shadow: 1px 1px var(--ink); }
+.turn-status strong { display: block; color: var(--primary); font-family: var(--font-display); font-size: 16px; margin-bottom: 3px; }
+.player-gauge { position: absolute; bottom: 18px; left: 18px; width: 145px; z-index: 5; }
+.player-gauge > p { font-size: 12px; margin-bottom: 5px; }
+.finish-turn { position: absolute; bottom: 24px; right: 18px; z-index: 5; width: 156px; }
+.hand-area { position: absolute; bottom: 0; left: 175px; right: 175px; height: 155px; overflow: visible; }
+.hand-scroll { position: absolute; inset: -35px 0 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; padding: 12px 15px 0; }
+.hand-fan { display: flex; justify-content: center; width: max-content; min-width: 100%; height: 150px; padding: 12px 28px 0; }
+.fan-card { flex-shrink: 0; transform: translateY(var(--fan-y)) rotate(var(--fan-angle)); transform-origin: center 120%; transition: transform .2s; position: relative; }
+.fan-card + .fan-card { margin-left: -44px; }
+.fan-card:hover, .fan-card:focus-within, .fan-card.is-selected { transform: translateY(-22px) rotate(0); z-index: 20; }
+.game-card { background: var(--ink); border: 3px solid var(--card-edge); box-shadow: var(--shadow-game-card); }
+.action-overlay { position: absolute; inset: 0; z-index: 30; display: grid; place-items: center; background: color-mix(in oklab, var(--ink) 72%, transparent); padding: 14px; }
+.action-dialog { position: relative; display: flex; align-items: center; gap: 18px; width: min(560px, 90%); max-height: calc(100% - 20px); border: 2px solid var(--primary); border-radius: 8px; background: var(--popover); box-shadow: var(--shadow-game-card); padding: 18px; overflow-y: auto; }
+.action-dialog > .game-card { width: 125px; height: 184px; }
+.action-content { flex: 1; min-width: 0; }
+.lobby { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100%; padding: 32px; gap: 18px; text-align: center; }
+.lobby-art { position: absolute; left: 0; bottom: -10%; width: 36%; height: 88%; object-fit: contain; opacity: .7; pointer-events: none; }
+.lobby-title { font-size: 52px; line-height: 1; }
+.lobby-options { position: relative; display: flex; flex-direction: column; gap: 12px; width: 290px; }
+@media (min-height: 600px) and (orientation: landscape) {
+  .opponent-top { top: 70px; }
+  .opponent { width: 190px; }
+  .opponent-hand { height: 72px; }
+  .opponent-hand .card-back { width: 48px; height: 68px; }
+  .table-pile .card-back, .table-pile .game-card, .discard-empty { width: 96px; height: 140px; }
+  .table-center { gap: 38px; top: 32%; }
+  .hand-area { height: 225px; }
+  .hand-fan { height: 220px; padding-top: 20px; }
+  .hand-fan .game-card { width: 126px; height: 188px; font-size: 13px; }
+  .fan-card + .fan-card { margin-left: -52px; }
+  .player-gauge { bottom: 44px; width: 180px; }
+  .finish-turn { bottom: 50px; }
+}
+@media (orientation: portrait) {
+  .game-stage { inset: auto; top: 50%; left: 50%; width: 100dvh; height: 100dvw; transform: translate(-50%, -50%) rotate(90deg); }
+}
+@media (max-height: 390px) and (orientation: landscape), (max-width: 390px) and (orientation: portrait) {
+  .opponent-top { top: 36px; }
+  .opponent-hand { height: 34px; margin-bottom: 3px; }
+  .opponent-hand .card-back { height: 34px; width: 25px; font-size: 8px; }
+  .opponent-hand .card-back::after { padding: 4px 0; }
+  .opponent { width: 145px; }
+  .opponent-name { font-size: 11px; }
+  .table-center { top: 38%; }
+  .table-pile .card-back, .table-pile .game-card, .discard-empty { width: 52px; height: 74px; }
+  .turn-status { top: 66%; font-size: 10px; }
+  .turn-status p { display: none; }
+  .turn-status strong { font-size: 13px; }
+  .hand-area { height: 125px; left: 140px; right: 140px; }
+  .hand-fan .game-card { width: 78px; height: 116px; font-size: 9px; }
+  .fan-card + .fan-card { margin-left: -42px; }
+  .player-gauge { width: 115px; left: 12px; bottom: 15px; }
+  .finish-turn { width: 125px; right: 12px; bottom: 16px; }
+  .lobby { padding: 18px; gap: 12px; }
+  .lobby-title { font-size: 40px; }
+}
+@media (prefers-reduced-motion: reduce) { .fan-card, .game-card { transition: none; } .animate-wobble { animation: none; } }

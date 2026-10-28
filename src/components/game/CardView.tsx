@@ -37,13 +37,12 @@ export function CardView({
       aria-pressed={onClick ? Boolean(selected) : undefined}
       title={`${card.name} — ${card.desc}`}
       className={cn(
-        "sticker relative flex shrink-0 flex-col items-center justify-between gap-0 rounded-lg p-1.5 whitespace-normal text-ink transition-transform hover:brightness-110 hover:text-ink",
+        "game-card relative flex shrink-0 flex-col items-center justify-between gap-0 rounded-lg p-1 whitespace-normal text-foreground transition-transform hover:brightness-110 hover:text-foreground",
         dims,
-        KIND_BG[card.kind],
-        selected && "-translate-y-4 ring-4 ring-accent",
+        selected && "ring-2 ring-primary",
       )}
     >
-      <span className="w-full shrink-0 truncate text-left font-bold uppercase opacity-80">{KIND_LABEL[card.kind]}</span>
+      <span className={cn("card-category w-full shrink-0 truncate rounded-sm px-1 text-left text-[8px] font-bold uppercase text-ink", KIND_BG[card.kind])}>{KIND_LABEL[card.kind]}</span>
       {art ? (
         <img src={art} alt="" draggable={false} className="my-1 min-h-0 w-full flex-1 rounded-sm object-cover" />
       ) : (
@@ -52,7 +51,7 @@ export function CardView({
       <span className="line-clamp-2 w-full shrink-0 text-center font-bold leading-tight">{card.name}</span>
       {card.inevitable && <span className="mt-0.5 shrink-0 rounded bg-ink px-1 text-[8px] font-bold text-primary">INÉVITABLE</span>}
       {badge != null && (
-        <span className="sticker absolute -top-2 -right-2 grid h-7 min-w-7 place-items-center rounded-full bg-background px-1 font-display text-xs text-foreground">
+        <span className="card-value absolute top-4 left-1 grid h-6 min-w-6 place-items-center rounded-sm bg-ink/90 px-1 font-display text-base text-primary">
           {badge}
         </span>
       )}
