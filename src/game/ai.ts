@@ -49,19 +49,19 @@ export function aiStep(s: GameState): GameState {
     if (!s.giftGiven && weakest) {
       const gifts = me.hand.filter((c) => c.kind === "gift").sort((a, b) => b.value! - a.value!);
       if (gifts.length) {
-        const r = tryDo(() => playGift(s, me.id, gifts[0].id, weakest.id));
+        const r = tryDo(() => playGift(s, me.id, gifts[0]!.id, weakest.id));
         if (r) return r;
       }
       const useless = me.hand.filter((c) => c.kind === "useless");
       if (useless.length >= 2 && useless.length !== 3 && s.playsLeft >= 2) {
-        const r = tryDo(() => playUselessCombo(s, me.id, [useless[0].id, useless[1].id], weakest.id));
+        const r = tryDo(() => playUselessCombo(s, me.id, [useless[0]!.id, useless[1]!.id], weakest.id));
         if (r) return r;
       }
     }
     const sec = me.hand.find((c) => c.effect === "secourge");
     const withGauge = foes.filter((f) => f.gauge.length).sort((a, b) => gaugeTotal(b) - gaugeTotal(a))[0];
     if (sec && withGauge) {
-      const it = [...withGauge.gauge].sort((a, b) => itemValue(b) - itemValue(a))[0];
+      const it = [...withGauge.gauge].sort((a, b) => itemValue(b) - itemValue(a))[0]!;
       const r = tryDo(() => playTrick(s, me.id, sec.id, withGauge.id, it.id));
       if (r) return r;
     }

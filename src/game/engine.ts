@@ -45,7 +45,7 @@ export function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
+    [a[i], a[j]] = [a[j]!, a[i]!];
   }
   return a;
 }
@@ -106,13 +106,13 @@ function draw(s: GameState, p: Player, n: number) {
 function take(p: Player, cardId: string): Card {
   const i = p.hand.findIndex((c) => c.id === cardId);
   if (i < 0) throw new GameError("Carte absente de ta main");
-  return p.hand.splice(i, 1)[0];
+  return p.hand.splice(i, 1)[0]!;
 }
 
 function assertTurn(s: GameState, pid: string, cost = 1) {
   if (s.winner) throw new GameError("La partie est terminée");
   if (s.pending) throw new GameError("Une riposte est en attente");
-  const cur = s.players[s.current];
+  const cur = s.players[s.current]!;
   if (cur.id !== pid) throw new GameError("Ce n'est pas ton tour");
   if (s.playsLeft < cost) throw new GameError("Tu as déjà joué 3 cartes ce tour");
 }
@@ -141,8 +141,8 @@ function checkElim(s: GameState, p: Player) {
   log(s, `💀 ${p.name} est éliminé(e) ! Ses cartes retournent dans la pioche.`);
   const alive = s.players.filter((x) => x.alive);
   if (alive.length === 1) {
-    s.winner = alive[0].id;
-    log(s, `🏆 ${alive[0].name} remporte la partie !`);
+    s.winner = alive[0]!.id;
+    log(s, `🏆 ${alive[0]!.name} remporte la partie !`);
   }
 }
 
@@ -161,7 +161,7 @@ function resolve(s: GameState, pend: Pending) {
   const to = P(s, pend.to);
   if (pend.type === "gift") {
     to.gauge.push(pend.item);
-    log(s, `🎁 ${from.name} offre ${pend.item.base[0].name} (${itemValue(pend.item)}) à ${to.name}`);
+    log(s, `🎁 ${from.name} offre ${pend.item.base[0]!.name} (${itemValue(pend.item)}) à ${to.name}`);
     checkElim(s, to);
     return;
   }
@@ -182,14 +182,14 @@ function resolve(s: GameState, pend: Pending) {
     s.discard.push(c);
     if (to.hand.length) {
       const i = Math.floor(Math.random() * to.hand.length);
-      from.hand.push(to.hand.splice(i, 1)[0]);
+      from.hand.push(to.hand.splice(i, 1)[0]!);
     }
     log(s, `🦝 ${from.name} vole une carte à ${to.name}`);
   } else if (c.effect === "deuil") {
     s.discard.push(c);
     for (let k = 0; k < 2 && to.hand.length; k++) {
       const i = Math.floor(Math.random() * to.hand.length);
-      s.discard.push(to.hand.splice(i, 1)[0]);
+      s.discard.push(to.hand.splice(i, 1)[0]!);
     }
     log(s, `⚰️ ${to.name} défausse 2 cartes`);
   }
@@ -197,22 +197,22 @@ function resolve(s: GameState, pend: Pending) {
 
 function afterAction(s: GameState) {
   if (s.winner || s.pending) return;
-  const cur = s.players[s.current];
+  const cur = s.players[s.current]!;
   if (!cur.alive) advance(s, false);
 }
 
 function advance(s: GameState, drawCard: boolean) {
-  const cur = s.players[s.current];
+  const cur = s.players[s.current]!;
   if (drawCard && cur.alive) draw(s, cur, 1);
   if (s.winner) return;
   let n = s.current;
   do n = (n + 1) % s.players.length;
-  while (!s.players[n].alive);
+  while (!s.players[n]!.alive);
   s.current = n;
   s.playsLeft = MAX_PLAYS;
   s.giftGiven = false;
   s.seq++;
-  log(s, `C'est au tour de ${s.players[n].name}`);
+  log(s, `C'est au tour de ${s.players[n]!.name}`);
 }
 
 let itemSeq = 0;
@@ -296,7 +296,7 @@ export function playTrick(st: GameState, pid: string, cardId: string, tid: strin
     throw new GameError("Ce joueur n'a aucun cadeau dans sa jauge");
   take(p, cardId);
   s.playsLeft--;
-  deliver(s, { type: "trick", from: pid, to: tid, card: c, itemId });
+  deliver(s, itemId ? { type: "trick", from: pid, to: tid, card: c, itemId } : { type: "trick", from: pid, to: tid, card: c });
   afterAction(s);
   return s;
 }
@@ -309,11 +309,11 @@ export function playSirene(st: GameState, pid: string, cardId: string) {
   if (!c || c.effect !== "sirene") throw new GameError("Carte invalide");
   if (!p.gauge.length) throw new GameError("Ta jauge est vide");
   take(p, cardId);
-  const big = [...p.gauge].sort((a, b) => itemValue(b) - itemValue(a))[0];
+  const big = [...p.gauge].sort((a, b) => itemValue(b) - itemValue(a))[0]!;
   p.gauge = p.gauge.filter((g) => g !== big);
   s.discard.push(c, ...big.base, ...big.extras);
   s.playsLeft--;
-  log(s, `🚨 ${p.name} se débarrasse de ${big.base[0].name}`);
+  log(s, `🚨 ${p.name} se débarrasse de ${big.base[0]!.name}`);
   return s;
 }
 
