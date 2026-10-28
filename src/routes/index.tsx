@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import hero from "@/assets/maudit-cadeau.png";
-import table from "@/assets/table.jpg.asset.json";
+import background from "@/assets/lobby-background.jpg";
 import { Button } from "@/components/ui/button";
 import { Play, BookOpen } from "lucide-react";
 
@@ -23,9 +22,8 @@ function Index() {
   const [bots, setBots] = useState(2);
   return (
     <main className="landscape-shell">
-      <div className="game-stage">
-      <img src={table.url} alt="" className="table-art" />
-      <img src={hero} alt="" className="lobby-art" />
+      <div className="game-stage lobby-stage">
+      <img src={background} alt="" className="table-art" />
       <div className="lobby">
       <h1 className="lobby-title font-display text-primary text-outline">
         Maudits
