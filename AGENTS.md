@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Game rules live in pure functions in src/game/engine.ts (immutable state in, new state out) so solo AI and future online mode share one rules engine; covered by src/game/engine.test.ts.
