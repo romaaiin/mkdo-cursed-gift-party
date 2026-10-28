@@ -14,6 +14,7 @@ import {
   riposteOptions,
   MAX_GAUGE,
 } from "./engine";
+import { ATTACH_BONUS } from "./cards";
 
 /** One AI action; returns the next state (always progresses). */
 export function aiStep(s: GameState): GameState {
@@ -36,7 +37,12 @@ export function aiStep(s: GameState): GameState {
         const r = tryDo(() => playAntidotes(s, me.id, cure.a, cure.g));
         if (r) return r;
       }
-      const sir = me.hand.find((c) => c.effect === "sirene");
+      const dog = me.hand.find((c) => c.effect === "magichien");
+      if (dog && weakest) {
+        const r = tryDo(() => playTrick(s, me.id, dog.id, weakest.id));
+        if (r) return r;
+      }
+      const sir = me.hand.find((c) => c.effect === "sirene" || (c.effect === "yeti" && g >= 7));
       if (sir) {
         const r = tryDo(() => playSirene(s, me.id, sir.id));
         if (r) return r;
@@ -58,7 +64,7 @@ export function aiStep(s: GameState): GameState {
         if (r) return r;
       }
     }
-    const sec = me.hand.find((c) => c.effect === "secourge");
+    const sec = me.hand.find((c) => !!ATTACH_BONUS[c.effect!]);
     const withGauge = foes.filter((f) => f.gauge.length).sort((a, b) => gaugeTotal(b) - gaugeTotal(a))[0];
     if (sec && withGauge) {
       const it = [...withGauge.gauge].sort((a, b) => itemValue(b) - itemValue(a))[0]!;
@@ -66,14 +72,9 @@ export function aiStep(s: GameState): GameState {
       if (r) return r;
     }
     const richest = [...foes].sort((a, b) => b.hand.length - a.hand.length)[0];
-    const steal = me.hand.find((c) => c.effect === "vol" || c.effect === "deuil");
+    const steal = me.hand.find((c) => c.effect === "vol" || c.effect === "deuil" || c.effect === "franken" || (c.effect === "petgaz" && me.hand.length < 4));
     if (steal && richest && richest.hand.length) {
       const r = tryDo(() => playTrick(s, me.id, steal.id, richest.id));
-      if (r) return r;
-    }
-    const pio = me.hand.find((c) => c.effect === "pioche");
-    if (pio && me.hand.length < 6) {
-      const r = tryDo(() => playDraw(s, me.id, pio.id));
       if (r) return r;
     }
   }
@@ -84,7 +85,7 @@ export function aiRiposte(s: GameState, pid: string): RiposteChoice | null {
   const pend = s.pending!;
   const me = s.players.find((p) => p.id === pid)!;
   const opts = riposteOptions(s, pid);
-  const dmg = pend.type === "gift" ? itemValue(pend.item) : pend.card.effect === "secourge" ? 2 : 1;
+  const dmg = pend.type === "gift" ? itemValue(pend.item) : (ATTACH_BONUS[pend.card.effect!] ?? 1);
   const lethal = gaugeTotal(me) + dmg >= MAX_GAUGE;
   if (!lethal && dmg < 3 && Math.random() < 0.6) return null;
   if (opts.includes("cacarma")) return "cacarma";

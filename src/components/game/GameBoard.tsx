@@ -252,7 +252,7 @@ function ActionPanel({
     ) : <p>Inutile seul… Garde-en 2 pour un combo, ou 3 pour un Cacarma.</p>;
   else if (card.kind === "trick")
     body = <><p>Cibler :</p><Targets onPick={(t) => act(() => playTrick(s, ME, card.id, t))} /></>;
-  else if (card.kind === "draw" || card.effect === "sirene")
+  else if (card.kind === "draw" || card.effect === "sirene" || card.effect === "yeti")
     body = (
       <button className="btn-slime px-6 py-2" onClick={() => act(() => (card.kind === "draw" ? playDraw(s, ME, card.id) : playSirene(s, ME, card.id)))}>
         Jouer la carte
