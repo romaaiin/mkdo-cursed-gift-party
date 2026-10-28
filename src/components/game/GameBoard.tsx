@@ -27,6 +27,9 @@ import { ArrowDownToLine, Maximize, Minimize, X } from "lucide-react";
 import table from "@/assets/game-table.jpg";
 import { cardArt } from "./card-art";
 import { SettingsControl, useGameSettings } from "./GameSettings";
+import { TutorialGuide } from "./TutorialGuide";
+import { cardLesson, INITIAL_TUTORIAL, TUTORIAL_KEY, tutorialStep, TUTORIAL_LESSONS } from "@/game/tutorial";
+import { GraduationCap } from "lucide-react";
 
 const BOT_NAMES = ["Gros Bulot", "Tata Yolande", "Momie Touthanpéku"];
 const ME = "p0";
@@ -45,6 +48,16 @@ export function GameBoard({ bots }: { bots: number }) {
   const [cureG, setCureG] = useState<string[]>([]);
   const [err, setErr] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
+  const [guided, setGuided] = useState(false);
+  const [progress, setProgress] = useState(INITIAL_TUTORIAL);
+  useEffect(() => {
+    try { setGuided(localStorage.getItem(TUTORIAL_KEY) !== "done"); } catch { setGuided(true); }
+  }, []);
+  const stopTutorial = () => {
+    setGuided(false);
+    try { localStorage.setItem(TUTORIAL_KEY, "done"); } catch { /* Keep dismissal for this session. */ }
+  };
+  const step = s ? tutorialStep(s, progress) : "welcome";
 
   useEffect(() => setS(newGame()), [bots]); // client-only shuffle
 
@@ -55,7 +68,7 @@ export function GameBoard({ bots }: { bots: number }) {
 
   // Drive AI turns and AI ripostes
   useEffect(() => {
-    if (!s || s.winner) return;
+    if (!s || s.winner || (guided && step === "welcome")) return;
     if (s.pending) {
       const target = s.pending.to;
       const t = s.players.find((p) => p.id === target);
@@ -68,7 +81,7 @@ export function GameBoard({ bots }: { bots: number }) {
       return () => clearTimeout(id);
     }
     return undefined;
-  }, [s]);
+  }, [s, guided, step]);
 
   const me = s?.players.find((p) => p.id === ME);
   const myTurn = !!s && s.players[s.current]?.id === ME && !s.pending && !s.winner;
@@ -81,7 +94,9 @@ export function GameBoard({ bots }: { bots: number }) {
 
   const act = (f: () => GameState) => {
     try {
-      setS(f());
+      const next = f();
+      setS(next);
+      if (guided) setProgress(p => ({ ...p, acted: true, ended: p.ended || next.seq !== s.seq }));
       setSel(null);
       setCureA([]);
       setCureG([]);
@@ -92,6 +107,7 @@ export function GameBoard({ bots }: { bots: number }) {
   };
 
   const open = (c: Card) => {
+    if (guided) setProgress(p => ({ ...p, inspected: true }));
     sound("card");
     setErr(null);
     setSel(sel === c.id ? null : c.id);
@@ -120,11 +136,12 @@ export function GameBoard({ bots }: { bots: number }) {
 
   return (
     <main className="landscape-shell">
-      <div className="game-stage" data-animations={preferences.animations ? "on" : "off"}>
+      <div className={cn("game-stage", guided && "tutorial-active")} data-tutorial-target={guided ? TUTORIAL_LESSONS[step].target : undefined} data-animations={preferences.animations ? "on" : "off"}>
         <img className="table-art" src={table} alt="" />
         <header className="game-topbar">
           <Link to="/" className="game-brand font-display">Maudits <span className="text-secondary">Cadeaux</span></Link>
           <div className="game-tools">
+            <Button size="icon" variant="outline" aria-label="Relancer le tutoriel" title="Relancer le tutoriel" onClick={() => { setProgress({ ...INITIAL_TUTORIAL }); setGuided(true); setSel(null); }}><GraduationCap /></Button>
             <SettingsControl />
             <Button size="icon" variant="outline" title="Plein écran" aria-label="Plein écran" onClick={fullscreen}>{expanded ? <Minimize /> : <Maximize />}</Button>
             <Button size="icon" variant="outline" asChild><Link to="/" aria-label="Quitter la partie" title="Quitter la partie"><X /></Link></Button>
@@ -193,15 +210,18 @@ export function GameBoard({ bots }: { bots: number }) {
               <Button size="icon" variant="ghost" className="absolute top-1 right-1" aria-label="Fermer la carte" onClick={() => setSel(null)}><X /></Button>
               <CardView card={card} size="lg" />
               <div className="action-content">
+                {guided && <div className="tutorial-inline" aria-live="polite"><p className="font-display text-primary">Conseil du tutoriel</p><p>{cardLesson(card, s)}</p></div>}
                 {myTurn ? <ActionPanel s={s} card={card} useless={useless} aliveFoes={aliveFoes} cureA={cureA} cureG={cureG} setCureA={setCureA} setCureG={setCureG} act={act} err={err} /> : <><h2 className="font-display text-lg text-primary">{card.name}</h2><p className="mt-2 text-sm">{card.desc}</p></>}
               </div>
             </div>
           </div>
         )}
-        {pendingForMe && <RiposteModal s={s} onChoose={(c) => act(() => respond(s, ME, c))} />}
+        {pendingForMe && <RiposteModal s={s} guided={guided} onChoose={(c) => act(() => respond(s, ME, c))} />}
+        {guided && !card && !pendingForMe && !winner && <TutorialGuide step={step} onStart={() => setProgress(p => ({ ...p, welcomed: true }))} onStop={stopTutorial} />}
         {winner && <div className="action-overlay"><div className="action-dialog flex-col text-center">
           <div className="text-5xl">{winner.id === ME ? "🏆" : "💀"}</div>
           <h2 className="font-display text-3xl text-primary">{winner.id === ME ? "Victoire !" : `${winner.name} gagne`}</h2>
+          {guided && <><p className="text-sm">Le dernier survivant gagne. Tu connais maintenant les bases !</p><Button variant="outline" onClick={stopTutorial}>Terminer le tutoriel</Button></>}
           <Button className="btn-slime h-auto px-8 py-3" onClick={() => { setS(newGame()); setSel(null); }}>Rejouer</Button>
           <Link to="/" className="text-sm underline">Menu</Link>
         </div></div>}
@@ -307,7 +327,7 @@ const RIPOSTE_LABEL: Record<RiposteChoice, string> = {
   combo3: "🔄 Cacarma (3 Inutiles)",
 };
 
-function RiposteModal({ s, onChoose }: { s: GameState; onChoose: (c: RiposteChoice | null) => void }) {
+function RiposteModal({ s, guided, onChoose }: { s: GameState; guided: boolean; onChoose: (c: RiposteChoice | null) => void }) {
   const p = s.pending;
   if (!p) return null;
   const from = s.players.find((x) => x.id === p.from);
@@ -319,6 +339,7 @@ function RiposteModal({ s, onChoose }: { s: GameState; onChoose: (c: RiposteChoi
       <div className="action-dialog" role="dialog" aria-modal="true" aria-label="Riposte">
         <CardView card={what} size="lg" />
         <div className="action-content">
+        {guided && <div className="tutorial-inline"><p className="font-display text-primary">{TUTORIAL_LESSONS.riposte.title}</p><p>{TUTORIAL_LESSONS.riposte.text}</p></div>}
         <p className="font-display text-xl text-secondary">{from.name} t'attaque !</p>
         <p className="my-3 text-xs text-muted-foreground">{what.desc}</p>
         <div className="grid gap-2">

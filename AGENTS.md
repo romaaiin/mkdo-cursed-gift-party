@@ -14,3 +14,4 @@
 - The lobby and game use a shared landscape stage rotated inside portrait viewports; keep dialogs inside that stage and fan transforms in CSS so hit targets rotate with the visuals.
 - Device-only audiovisual preferences live in a shared provider with browser storage; keep audio gesture-initialized and outside the rules engine so settings never affect gameplay or require an account.
 - The landscape rules guide distinguishes official card powers from provisional solo behavior so documentation never silently legitimizes unimplemented rules.
+- First-game guidance derives its steps from real game state and completed actions; keep completion device-local and never alter deals or rules to force tutorial events.
