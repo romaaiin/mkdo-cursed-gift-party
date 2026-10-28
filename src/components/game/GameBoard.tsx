@@ -53,6 +53,7 @@ export function GameBoard({ bots }: { bots: number }) {
       const id = setTimeout(() => setS(aiStep(s)), 900);
       return () => clearTimeout(id);
     }
+    return undefined;
   }, [s]);
 
   const me = s?.players.find((p) => p.id === ME);
@@ -278,7 +279,7 @@ function ActionPanel({
           {me.gauge.map((it) => (
             <button key={it.id} onClick={() => setCureG(toggle(cureG, it.id))}
               className={cn("rounded-full border-2 border-ink px-3 py-1 text-xs font-bold", cureG.includes(it.id) ? "bg-k-gift text-ink" : "bg-muted")}>
-              {it.base[0].emoji} {itemValue(it)}
+              {it.base[0]!.emoji} {itemValue(it)}
             </button>
           ))}
         </div>

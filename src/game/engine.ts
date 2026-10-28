@@ -76,7 +76,7 @@ export function createGame(seats: { name: string; isAI: boolean }[]): GameState 
     giftGiven: false,
     pending: null,
     winner: null,
-    log: [`La partie commence ! ${players[0].name} joue en premier.`],
+    log: [`La partie commence ! ${players[0]!.name} joue en premier.`],
     seq: 0,
   };
 }
