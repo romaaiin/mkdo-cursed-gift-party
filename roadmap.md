@@ -1,3 +1,5 @@
 - [x] Recomposer la table en paysage avec adversaires autour du tapis.
 - [x] Afficher les illustrations dans une main en éventail et harmoniser le menu.
 - [x] Vérifier sélection, jeu d’une carte, riposte et affichage téléphone/ordinateur.
+- [ ] Remonter les adversaires latéraux pour séparer leurs informations de celles du joueur.
+- [ ] Installer deux fonds distincts pour la partie et l’accueil, puis vérifier l’affichage.
