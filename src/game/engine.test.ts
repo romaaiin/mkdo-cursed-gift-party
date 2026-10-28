@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import type { Card } from "./cards";
+import { buildDeck, type Card } from "./cards";
 import {
   createGame,
   endTurn,
@@ -7,6 +7,8 @@ import {
   playAntidotes,
   playGift,
   playUselessCombo,
+  playSirene,
+  playTrick,
   respond,
   type GameState,
 } from "./engine";
@@ -102,5 +104,28 @@ describe("Maudits Cadeaux rules", () => {
     const r = endTurn(s, "p0");
     expect(r.players[0]!.hand.length).toBe(1);
     expect(r.current).toBe(1);
+  });
+
+  it("base deck has 63 cards with 21 Maudits Cadeaux", () => {
+    const d = buildDeck();
+    expect(d.length).toBe(63);
+    expect(d.filter((c) => c.kind === "gift").length).toBe(21);
+  });
+
+  it("Momie Touthanpéku adds 3 to a gift", () => {
+    const momie: Card = { id: "m", kind: "trick", effect: "momie", name: "M", emoji: "", desc: "" };
+    const s = setup([momie], []);
+    s.players[1]!.gauge = [{ id: "x", base: [gift(2)], extras: [], baseValue: 2 }];
+    const r = playTrick(s, "p0", "m", "p1", "x");
+    expect(gaugeTotal(r.players[1]!)).toBe(5);
+  });
+
+  it("Bienvenue chez l'Yéti blocks gifts until the next turn", () => {
+    const yeti: Card = { id: "y", kind: "defense", effect: "yeti", name: "Y", emoji: "", desc: "" };
+    const s = setup([yeti], [gift(3)]);
+    let r = playSirene(s, "p0", "y");
+    r = endTurn(r, "p0");
+    r = playGift(r, "p1", r.players[1]!.hand.find((c) => c.kind === "gift")!.id, "p0");
+    expect(gaugeTotal(r.players[0]!)).toBe(0);
   });
 });

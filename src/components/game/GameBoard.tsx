@@ -101,13 +101,13 @@ export function GameBoard({ bots }: { bots: number }) {
             <div
               key={f.id}
               className={cn(
-                "sticker rounded-xl bg-card p-2",
+                "zone-neon p-2",
                 s.players[s.current]!.id === f.id && "ring-4 ring-accent",
                 !f.alive && "opacity-40 grayscale",
               )}
             >
               <div className="flex items-center justify-between gap-1">
-                <span className="truncate font-display text-sm">{f.alive ? f.name : `💀 ${f.name}`}</span>
+                <span className="truncate font-display text-sm">{f.alive ? f.name : `💀 ${f.name}`}{f.shielded && " ❄️"}</span>
                 <span className="text-[10px] text-muted-foreground">🃏{f.hand.length}</span>
               </div>
               <Gauge player={f} />
@@ -117,7 +117,7 @@ export function GameBoard({ bots }: { bots: number }) {
       </div>
 
       {/* Table */}
-      <div className="sticker flex items-center gap-3 rounded-2xl bg-muted p-3">
+      <div className="zone-neon flex items-center gap-3 p-3">
         <div className="flex flex-col items-center">
           <div className="sticker grid h-20 w-14 place-items-center rounded-lg bg-secondary font-display text-lg text-secondary-foreground">
             {s.deck.length}
@@ -142,9 +142,9 @@ export function GameBoard({ bots }: { bots: number }) {
       </div>
 
       {/* Me */}
-      <div className="sticker rounded-2xl bg-card p-3">
+      <div className="zone-neon p-3">
         <div className="mb-2 flex items-center justify-between">
-          <span className="font-display text-lg">Ta Maudite Jauge</span>
+          <span className="font-display text-lg">Ta Maudite Jauge{me.shielded && " ❄️"}</span>
           {myTurn && (
             <span className="font-display text-sm text-accent">
               {s.playsLeft} coup{s.playsLeft > 1 ? "s" : ""} · {s.giftGiven ? "cadeau offert" : "cadeau dispo"}
@@ -252,7 +252,7 @@ function ActionPanel({
     ) : <p>Inutile seul… Garde-en 2 pour un combo, ou 3 pour un Cacarma.</p>;
   else if (card.kind === "trick")
     body = <><p>Cibler :</p><Targets onPick={(t) => act(() => playTrick(s, ME, card.id, t))} /></>;
-  else if (card.kind === "draw" || card.effect === "sirene")
+  else if (card.kind === "draw" || card.effect === "sirene" || card.effect === "yeti")
     body = (
       <button className="btn-slime px-6 py-2" onClick={() => act(() => (card.kind === "draw" ? playDraw(s, ME, card.id) : playSirene(s, ME, card.id)))}>
         Jouer la carte

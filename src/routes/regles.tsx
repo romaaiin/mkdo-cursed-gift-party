@@ -21,7 +21,9 @@ const rules = [
   ["🎃 Fourberie", "Déstabilise un adversaire pendant ton tour."],
   ["🐟 Riposte", "Se joue quand on t'attaque, même hors de ton tour."],
   ["🧶 Inutiles", "2 = Maudit Cadeau 1 pt Inévitable. 3 = Cacarma (renvoi à l'envoyeur)."],
-  ["💀 Élimination", "Les cartes de l'éliminé retournent dans la pioche."],
+  ["💀 Élimination", "Les cartes de l'éliminé (jauge + main) retournent dans la pioche, pas dans la Défausse Septique."],
+  ["🔁 Plus de pioche ?", "La Défausse Septique est mélangée et devient la nouvelle pioche."],
+  ["💡 Conseil", "N'essaie pas de répartir : attaque celui qui a la jauge la plus remplie !"],
 ];
 
 function Regles() {

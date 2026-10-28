@@ -1,4 +1,4 @@
-import { buildDeck, type Card } from "./cards";
+import { ATTACH_BONUS, buildDeck, type Card } from "./cards";
 
 export const MAX_GAUGE = 10;
 export const MAX_PLAYS = 3;
@@ -18,6 +18,7 @@ export interface Player {
   hand: Card[];
   gauge: GaugeItem[];
   alive: boolean;
+  shielded: boolean;
 }
 
 export type Pending =
@@ -51,7 +52,7 @@ export function shuffle<T>(arr: T[]): T[] {
 }
 
 export function itemValue(it: GaugeItem) {
-  return it.baseValue + it.extras.length * 2;
+  return it.baseValue + it.extras.reduce((s, c) => s + (ATTACH_BONUS[c.effect!] ?? 0), 0);
 }
 export function gaugeTotal(p: Player) {
   return p.gauge.reduce((s, it) => s + itemValue(it), 0);
@@ -66,6 +67,7 @@ export function createGame(seats: { name: string; isAI: boolean }[]): GameState 
     hand: deck.splice(0, HAND_SIZE),
     gauge: [],
     alive: true,
+    shielded: false,
   }));
   return {
     players,
@@ -148,6 +150,11 @@ function checkElim(s: GameState, p: Player) {
 
 function deliver(s: GameState, pend: Pending) {
   const target = P(s, pend.to);
+  if (target.shielded) {
+    s.discard.push(...(pend.type === "gift" ? [...pend.item.base] : [pend.card]));
+    log(s, `❄️ ${target.name} est à l'abri chez le Yéti !`);
+    return;
+  }
   const inev = pend.type === "gift" && pend.inevitable;
   if (!inev && riposteOptions(s, target.id).length > 0) {
     s.pending = pend;
@@ -166,7 +173,8 @@ function resolve(s: GameState, pend: Pending) {
     return;
   }
   const c = pend.card;
-  if (c.effect === "secourge") {
+  const bonus = ATTACH_BONUS[c.effect!];
+  if (bonus) {
     const it =
       to.gauge.find((g) => g.id === pend.itemId) ??
       [...to.gauge].sort((a, b) => itemValue(b) - itemValue(a))[0];
@@ -176,7 +184,7 @@ function resolve(s: GameState, pend: Pending) {
       return;
     }
     it.extras.push(c);
-    log(s, `🎃 ${from.name} ajoute +2 sur un cadeau de ${to.name}`);
+    log(s, `${c.emoji} ${from.name} ajoute +${bonus} sur un cadeau de ${to.name}`);
     checkElim(s, to);
   } else if (c.effect === "vol") {
     s.discard.push(c);
@@ -185,6 +193,22 @@ function resolve(s: GameState, pend: Pending) {
       from.hand.push(to.hand.splice(i, 1)[0]!);
     }
     log(s, `🦝 ${from.name} vole une carte à ${to.name}`);
+  } else if (c.effect === "magichien") {
+    s.discard.push(c);
+    const big = [...from.gauge].sort((a, b) => itemValue(b) - itemValue(a))[0];
+    if (!big) return log(s, `${c.name} : ${from.name} n'a rien à refiler`);
+    from.gauge = from.gauge.filter((g) => g !== big);
+    to.gauge.push(big);
+    log(s, `🐕 ${from.name} refile un cadeau de ${itemValue(big)} à ${to.name}`);
+    checkElim(s, to);
+  } else if (c.effect === "franken") {
+    s.discard.push(c);
+    if (to.hand.length) s.discard.push(to.hand.splice(Math.floor(Math.random() * to.hand.length), 1)[0]!);
+    log(s, `🧟 ${to.name} défausse 1 carte`);
+  } else if (c.effect === "petgaz") {
+    s.discard.push(c);
+    [from.hand, to.hand] = [to.hand, from.hand];
+    log(s, `💨 ${from.name} et ${to.name} échangent leurs mains`);
   } else if (c.effect === "deuil") {
     s.discard.push(c);
     for (let k = 0; k < 2 && to.hand.length; k++) {
@@ -209,6 +233,7 @@ function advance(s: GameState, drawCard: boolean) {
   do n = (n + 1) % s.players.length;
   while (!s.players[n]!.alive);
   s.current = n;
+  s.players[n]!.shielded = false;
   s.playsLeft = MAX_PLAYS;
   s.giftGiven = false;
   s.seq++;
@@ -292,8 +317,9 @@ export function playTrick(st: GameState, pid: string, cardId: string, tid: strin
   const p = P(s, pid);
   const c = p.hand.find((x) => x.id === cardId);
   if (!c || c.kind !== "trick") throw new GameError("Ce n'est pas une Fourberie");
-  if (c.effect === "secourge" && !P(s, tid).gauge.length)
+  if (ATTACH_BONUS[c.effect!] && !P(s, tid).gauge.length)
     throw new GameError("Ce joueur n'a aucun cadeau dans sa jauge");
+  if (c.effect === "magichien" && !p.gauge.length) throw new GameError("Ta jauge est vide, rien à refiler");
   take(p, cardId);
   s.playsLeft--;
   deliver(s, itemId ? { type: "trick", from: pid, to: tid, card: c, itemId } : { type: "trick", from: pid, to: tid, card: c });
@@ -306,7 +332,15 @@ export function playSirene(st: GameState, pid: string, cardId: string) {
   assertTurn(s, pid);
   const p = P(s, pid);
   const c = p.hand.find((x) => x.id === cardId);
-  if (!c || c.effect !== "sirene") throw new GameError("Carte invalide");
+  if (!c || (c.effect !== "sirene" && c.effect !== "yeti")) throw new GameError("Carte invalide");
+  if (c.effect === "yeti") {
+    take(p, cardId);
+    s.discard.push(c);
+    p.shielded = true;
+    s.playsLeft--;
+    log(s, `❄️ ${p.name} se réfugie chez le Yéti`);
+    return s;
+  }
   if (!p.gauge.length) throw new GameError("Ta jauge est vide");
   take(p, cardId);
   const big = [...p.gauge].sort((a, b) => itemValue(b) - itemValue(a))[0]!;
@@ -333,9 +367,6 @@ export function playDraw(st: GameState, pid: string, cardId: string) {
     advance(s, false);
     return s;
   }
-  draw(s, p, 2);
-  s.playsLeft--;
-  log(s, `⛏️ ${p.name} pioche 2 cartes`);
   return s;
 }
 
