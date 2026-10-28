@@ -133,19 +133,19 @@
 :root {
   --card-edge: oklch(0.91 0.025 120);
   --shadow-game-card: 0 5px 10px color-mix(in oklab, var(--ink) 75%, transparent);
-  --table-shade: linear-gradient(180deg, color-mix(in oklab, var(--ink) 35%, transparent), color-mix(in oklab, var(--background) 65%, transparent));
+  --table-shade: linear-gradient(180deg, color-mix(in oklab, var(--ink) 12%, transparent), color-mix(in oklab, var(--background) 25%, transparent));
 }
 .landscape-shell { position: fixed; inset: 0; overflow: hidden; background: var(--ink); }
 .game-stage { position: absolute; inset: 0; isolation: isolate; overflow: hidden; background: var(--background); }
-.table-art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .62; z-index: -2; }
+.table-art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
 .game-stage::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--table-shade); }
 .game-topbar { position: absolute; top: 10px; left: 14px; right: 14px; display: flex; justify-content: space-between; align-items: center; z-index: 10; }
 .game-brand { font-size: 20px; line-height: 1; color: var(--primary); text-shadow: 2px 2px var(--ink); }
 .game-tools { display: flex; gap: 6px; }
 .opponent { position: absolute; width: 170px; text-align: center; z-index: 2; }
 .opponent-top { top: 44px; left: 50%; transform: translateX(-50%); }
-.opponent-left { left: 18px; top: 37%; }
-.opponent-right { right: 18px; top: 37%; }
+.opponent-left { left: 18px; top: 22%; }
+.opponent-right { right: 18px; top: 22%; }
 .opponent-name { font-size: 13px; padding: 4px 8px; background: var(--ink); border: 1px solid var(--border); border-radius: 6px; }
 .opponent-active .opponent-name { border-color: var(--primary); box-shadow: var(--glow-neon); }
 .opponent-hand { height: 48px; display: flex; justify-content: center; margin-bottom: 6px; }
@@ -174,7 +174,7 @@
 .action-dialog > .game-card { width: 125px; height: 184px; }
 .action-content { flex: 1; min-width: 0; }
 .lobby { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100%; padding: 32px; gap: 18px; text-align: center; }
-.lobby-art { position: absolute; left: 0; bottom: -10%; width: 36%; height: 88%; object-fit: contain; opacity: .7; pointer-events: none; }
+.lobby-stage::before { background: color-mix(in oklab, var(--ink) 15%, transparent); }
 .lobby-title { font-size: 52px; line-height: 1; }
 .lobby-options { position: relative; display: flex; flex-direction: column; gap: 12px; width: 290px; }
 @media (min-height: 600px) and (orientation: landscape) {

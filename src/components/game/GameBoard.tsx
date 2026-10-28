@@ -24,7 +24,7 @@ import { Gauge } from "./Gauge";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ArrowDownToLine, Maximize, Minimize, X } from "lucide-react";
-import table from "@/assets/table.jpg.asset.json";
+import table from "@/assets/game-table.jpg";
 import { cardArt } from "./card-art";
 
 const BOT_NAMES = ["Gros Bulot", "Tata Yolande", "Momie Touthanpéku"];
@@ -112,7 +112,7 @@ export function GameBoard({ bots }: { bots: number }) {
   return (
     <main className="landscape-shell">
       <div className="game-stage">
-        <img className="table-art" src={table.url} alt="" />
+        <img className="table-art" src={table} alt="" />
         <header className="game-topbar">
           <Link to="/" className="game-brand font-display">Maudits <span className="text-secondary">Cadeaux</span></Link>
           <div className="game-tools">
