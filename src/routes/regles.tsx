@@ -7,6 +7,8 @@ export const Route = createFileRoute("/regles")({
       { name: "description", content: "Les règles du jeu Maudits Cadeaux, hyper faciles à apprendre." },
       { property: "og:title", content: "Règles — Maudits Cadeaux" },
       { property: "og:description", content: "Les règles du jeu Maudits Cadeaux, hyper faciles à apprendre." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Regles,
