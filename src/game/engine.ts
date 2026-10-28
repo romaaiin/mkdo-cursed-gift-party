@@ -367,7 +367,7 @@ export function respond(st: GameState, pid: string, choice: RiposteChoice | null
       const back: Pending =
         pend.type === "gift"
           ? { ...pend, from: pid, to: pend.from }
-          : { ...pend, from: pid, to: pend.from, itemId: undefined };
+          : { type: "trick", card: pend.card, from: pid, to: pend.from };
       resolve(s, back);
     }
   }
