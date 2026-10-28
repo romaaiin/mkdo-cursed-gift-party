@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import type { Card } from "@/game/cards";
 import {
@@ -30,6 +30,7 @@ import { SettingsControl, useGameSettings } from "./GameSettings";
 import { TutorialGuide } from "./TutorialGuide";
 import { cardLesson, INITIAL_TUTORIAL, TUTORIAL_KEY, tutorialStep, TUTORIAL_LESSONS } from "@/game/tutorial";
 import { GraduationCap } from "lucide-react";
+import { PlayerHand } from "./PlayerHand";
 
 const BOT_NAMES = ["Gros Bulot", "Tata Yolande", "Momie Touthanpéku"];
 const ME = "p0";
@@ -187,18 +188,7 @@ export function GameBoard({ bots }: { bots: number }) {
           <Gauge player={me} />
           <p className="mt-2 text-[10px] text-muted-foreground">{me.hand.length} cartes · {myTurn ? `${s.playsLeft} coups` : "En attente"}</p>
         </section>
-        <div className="hand-area">
-          <div className="hand-scroll">
-            <div className="hand-fan" aria-label="Ta main">
-              {me.hand.map((c, i) => {
-                const offset = i - (me.hand.length - 1) / 2;
-                const style = { "--fan-angle": `${Math.max(-14, Math.min(14, offset * 4))}deg`, "--fan-y": `${Math.min(18, Math.abs(offset) * 4)}px` } as CSSProperties;
-                return <div key={c.id} className={cn("fan-card", sel === c.id && "is-selected")} style={style}><CardView card={c} selected={sel === c.id} onClick={() => open(c)} /></div>;
-              })}
-              {!me.hand.length && <p className="py-10 text-sm text-muted-foreground">Main vide…</p>}
-            </div>
-          </div>
-        </div>
+        <PlayerHand cards={me.hand} selected={sel} onSelect={open} />
         <div className="finish-turn">
           <Button className="btn-slime h-auto w-full gap-2 px-2 py-3 text-xs whitespace-normal" disabled={!myTurn} onClick={() => act(() => endTurn(s, ME))}><ArrowDownToLine />Finir mon tour</Button>
           <p className="mt-2 text-center text-[10px] text-muted-foreground">{s.giftGiven ? "Cadeau offert" : "Cadeau disponible"}</p>
