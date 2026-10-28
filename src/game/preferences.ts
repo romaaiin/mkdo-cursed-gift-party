@@ -13,9 +13,9 @@ export function parsePreferences(raw: string | null): GamePreferences {
     if (!value || typeof value !== "object") return { ...DEFAULT_PREFERENCES };
     const stored = value as Record<string, unknown>;
     return {
-      music: typeof stored.music === "boolean" ? stored.music : true,
-      sounds: typeof stored.sounds === "boolean" ? stored.sounds : true,
-      animations: typeof stored.animations === "boolean" ? stored.animations : true,
+      music: typeof stored["music"] === "boolean" ? stored["music"] : true,
+      sounds: typeof stored["sounds"] === "boolean" ? stored["sounds"] : true,
+      animations: typeof stored["animations"] === "boolean" ? stored["animations"] : true,
     };
   } catch { return { ...DEFAULT_PREFERENCES }; }
 }
