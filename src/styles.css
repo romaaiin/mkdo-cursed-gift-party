@@ -142,7 +142,7 @@
 .game-topbar { position: absolute; top: 10px; left: 14px; right: 14px; display: flex; justify-content: space-between; align-items: center; z-index: 10; }
 .game-brand { font-size: 20px; line-height: 1; color: var(--primary); text-shadow: 2px 2px var(--ink); }
 .game-tools { display: flex; gap: 6px; }
-.opponent { position: absolute; width: 154px; text-align: center; z-index: 2; }
+.opponent { position: absolute; width: 170px; text-align: center; z-index: 2; }
 .opponent-top { top: 44px; left: 50%; transform: translateX(-50%); }
 .opponent-left { left: 18px; top: 37%; }
 .opponent-right { right: 18px; top: 37%; }
@@ -152,18 +152,18 @@
 .card-back { display: grid; place-items: center; width: 34px; height: 48px; flex-shrink: 0; border: 2px solid var(--card-edge); border-radius: 5px; background: var(--card); color: var(--primary); box-shadow: var(--shadow-game-card); font-family: var(--font-display); font-size: 11px; }
 .opponent-hand .card-back + .card-back { margin-left: -21px; }
 .card-back::after { content: "MKDO"; transform: rotate(-20deg); border: 1px solid var(--secondary); border-radius: 50%; padding: 8px 1px; }
-.table-center { position: absolute; top: 29%; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 20px; }
+.table-center { position: absolute; top: 38%; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 20px; }
 .table-pile { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 10px; }
 .table-pile .card-back { width: 65px; height: 92px; font-size: 17px; box-shadow: 3px 3px 0 var(--card-edge), 6px 6px 0 var(--ink), var(--shadow-game-card); }
 .table-pile .game-card { width: 65px; height: 92px; font-size: 8px; }
 .discard-empty { width: 65px; height: 92px; border: 2px dashed var(--primary); border-radius: 6px; opacity: .45; }
-.turn-status { position: absolute; top: 60%; left: 50%; transform: translateX(-50%); width: 44%; text-align: center; font-size: 11px; text-shadow: 1px 1px var(--ink); }
+.turn-status { position: absolute; top: 65%; left: 50%; transform: translateX(-50%); width: 44%; text-align: center; font-size: 11px; text-shadow: 1px 1px var(--ink); }
 .turn-status strong { display: block; color: var(--primary); font-family: var(--font-display); font-size: 16px; margin-bottom: 3px; }
 .player-gauge { position: absolute; bottom: 18px; left: 18px; width: 145px; z-index: 5; }
 .player-gauge > p { font-size: 12px; margin-bottom: 5px; }
 .finish-turn { position: absolute; bottom: 24px; right: 18px; z-index: 5; width: 156px; }
 .hand-area { position: absolute; bottom: 0; left: 175px; right: 175px; height: 155px; overflow: visible; }
-.hand-scroll { position: absolute; inset: -25px 0 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; padding: 32px 15px 0; }
+.hand-scroll { position: absolute; inset: -35px 0 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; padding: 12px 15px 0; }
 .hand-fan { display: flex; justify-content: center; width: max-content; min-width: 100%; height: 150px; padding: 12px 28px 0; }
 .fan-card { flex-shrink: 0; transform: translateY(var(--fan-y)) rotate(var(--fan-angle)); transform-origin: center 120%; transition: transform .2s; position: relative; }
 .fan-card + .fan-card { margin-left: -44px; }
@@ -199,11 +199,12 @@
   .opponent-hand { height: 34px; margin-bottom: 3px; }
   .opponent-hand .card-back { height: 34px; width: 25px; font-size: 8px; }
   .opponent-hand .card-back::after { padding: 4px 0; }
-  .opponent { width: 125px; }
+  .opponent { width: 145px; }
   .opponent-name { font-size: 11px; }
-  .table-center { top: 29%; }
+  .table-center { top: 38%; }
   .table-pile .card-back, .table-pile .game-card, .discard-empty { width: 52px; height: 74px; }
-  .turn-status { top: 55%; font-size: 10px; }
+  .turn-status { top: 66%; font-size: 10px; }
+  .turn-status p { display: none; }
   .turn-status strong { font-size: 13px; }
   .hand-area { height: 125px; left: 140px; right: 140px; }
   .hand-fan .game-card { width: 78px; height: 116px; font-size: 9px; }

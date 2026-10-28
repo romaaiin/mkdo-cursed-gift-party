@@ -122,7 +122,7 @@ export function GameBoard({ bots }: { bots: number }) {
         </header>
 
         {foes.map((f, i) => {
-          const position = foes.length === 1 || i === 1 ? "top" : i === 0 ? "left" : "right";
+          const position = foes.length === 1 ? "top" : foes.length === 2 ? (i === 0 ? "left" : "right") : i === 1 ? "top" : i === 0 ? "left" : "right";
           const avatar = f.id === "p1" ? "magichien" : f.id === "p2" ? "cacarma" : "momie";
           const art = cardArt({ id: f.id, kind: "trick", effect: avatar, name: f.name, emoji: "", desc: "" });
           return (
