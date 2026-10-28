@@ -11,6 +11,8 @@ export const Route = createFileRoute("/jeu")({
       { name: "description", content: "Affronte l'ordinateur à coups de Maudits Cadeaux." },
       { property: "og:title", content: "Partie solo — Maudits Cadeaux" },
       { property: "og:description", content: "Affronte l'ordinateur à coups de Maudits Cadeaux." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: JeuPage,

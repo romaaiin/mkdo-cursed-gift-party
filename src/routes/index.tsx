@@ -9,6 +9,8 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Offre des Maudits Cadeaux à tes adversaires jusqu'à ce que leur jauge explose." },
       { property: "og:title", content: "Maudits Cadeaux — le jeu mobile" },
       { property: "og:description", content: "Offre des Maudits Cadeaux à tes adversaires jusqu'à ce que leur jauge explose." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Index,
