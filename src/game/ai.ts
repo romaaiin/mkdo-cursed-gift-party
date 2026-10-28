@@ -17,7 +17,7 @@ import {
 
 /** One AI action; returns the next state (always progresses). */
 export function aiStep(s: GameState): GameState {
-  const me = s.players[s.current];
+  const me = s.players[s.current]!;
   const foes = s.players.filter((p) => p.alive && p.id !== me.id);
   const weakest = [...foes].sort((a, b) => gaugeTotal(b) - gaugeTotal(a))[0];
   const tryDo = (f: () => GameState) => {

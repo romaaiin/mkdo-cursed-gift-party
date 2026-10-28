@@ -21,7 +21,7 @@ export function Gauge({ player, compact }: { player: Player; compact?: boolean }
         <div className="mt-1 flex flex-wrap gap-1">
           {player.gauge.map((g) => (
             <span key={g.id} className="rounded-full bg-k-gift px-2 py-0.5 text-[10px] font-bold text-ink">
-              {g.base[0].emoji} {itemValue(g)}
+              {g.base[0]!.emoji} {itemValue(g)}
               {g.extras.length > 0 && " 🎃"}
             </span>
           ))}

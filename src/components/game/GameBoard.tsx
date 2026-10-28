@@ -49,14 +49,14 @@ export function GameBoard({ bots }: { bots: number }) {
       const id = setTimeout(() => setS(respond(s, t.id, aiRiposte(s, t.id))), 800);
       return () => clearTimeout(id);
     }
-    if (s.players[s.current].isAI) {
+    if (s.players[s.current]!.isAI) {
       const id = setTimeout(() => setS(aiStep(s)), 900);
       return () => clearTimeout(id);
     }
   }, [s]);
 
   const me = s?.players.find((p) => p.id === ME);
-  const myTurn = !!s && s.players[s.current].id === ME && !s.pending && !s.winner;
+  const myTurn = !!s && s.players[s.current]!.id === ME && !s.pending && !s.winner;
   const card = useMemo(() => me?.hand.find((c) => c.id === sel) ?? null, [me, sel]);
 
   if (!s || !me) return <div className="grid min-h-dvh place-items-center font-display text-2xl">Mélange…</div>;
@@ -101,7 +101,7 @@ export function GameBoard({ bots }: { bots: number }) {
               key={f.id}
               className={cn(
                 "sticker rounded-xl bg-card p-2",
-                s.players[s.current].id === f.id && "ring-4 ring-accent",
+                s.players[s.current]!.id === f.id && "ring-4 ring-accent",
                 !f.alive && "opacity-40 grayscale",
               )}
             >
@@ -125,7 +125,7 @@ export function GameBoard({ bots }: { bots: number }) {
         </div>
         <div className="flex flex-col items-center">
           {s.discard.length ? (
-            <CardView card={s.discard[s.discard.length - 1]} size="sm" />
+            <CardView card={s.discard[s.discard.length - 1]!} size="sm" />
           ) : (
             <div className="h-20 w-14 rounded-lg border-2 border-dashed" />
           )}
@@ -182,7 +182,7 @@ export function GameBoard({ bots }: { bots: number }) {
           disabled={!myTurn}
           onClick={() => act(() => endTurn(s, ME))}
         >
-          {myTurn ? "Piocher et finir mon tour" : `${s.players[s.current].name} joue…`}
+          {myTurn ? "Piocher et finir mon tour" : `${s.players[s.current]!.name} joue…`}
         </button>
       </div>
 
@@ -313,7 +313,7 @@ const RIPOSTE_LABEL: Record<RiposteChoice, string> = {
 function RiposteModal({ s, onChoose }: { s: GameState; onChoose: (c: RiposteChoice | null) => void }) {
   const p = s.pending!;
   const from = s.players.find((x) => x.id === p.from)!;
-  const what = p.type === "gift" ? p.item.base[0] : p.card;
+  const what = p.type === "gift" ? p.item.base[0]! : p.card;
   const opts = riposteOptions(s, ME);
   return (
     <div className="fixed inset-0 z-40 grid place-items-end bg-ink/70 p-3">
