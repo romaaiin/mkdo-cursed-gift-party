@@ -42,26 +42,26 @@
 
 :root {
   --radius: 1rem;
-  --background: oklch(0.2 0.04 160);
+  --background: oklch(0.2 0.09 305);
   --foreground: oklch(0.97 0.02 120);
-  --card: oklch(0.27 0.05 160);
+  --card: oklch(0.26 0.1 300);
   --card-foreground: oklch(0.97 0.02 120);
-  --popover: oklch(0.25 0.05 160);
+  --popover: oklch(0.24 0.1 300);
   --popover-foreground: oklch(0.97 0.02 120);
-  --primary: oklch(0.86 0.22 130);
-  --primary-foreground: oklch(0.18 0.04 160);
+  --primary: oklch(0.88 0.2 130);
+  --primary-foreground: oklch(0.18 0.06 300);
   --secondary: oklch(0.68 0.24 355);
   --secondary-foreground: oklch(0.99 0 0);
-  --muted: oklch(0.32 0.04 160);
-  --muted-foreground: oklch(0.78 0.04 140);
+  --muted: oklch(0.3 0.09 300);
+  --muted-foreground: oklch(0.8 0.05 300);
   --accent: oklch(0.86 0.17 90);
-  --accent-foreground: oklch(0.2 0.04 160);
+  --accent-foreground: oklch(0.2 0.06 300);
   --destructive: oklch(0.63 0.24 25);
   --destructive-foreground: oklch(0.99 0 0);
-  --border: oklch(0.4 0.05 160);
-  --input: oklch(0.4 0.05 160);
-  --ring: oklch(0.86 0.22 130);
-  --ink: oklch(0.12 0.02 160);
+  --border: oklch(0.4 0.1 300);
+  --input: oklch(0.4 0.1 300);
+  --ring: oklch(0.88 0.2 130);
+  --ink: oklch(0.12 0.04 300);
   --k-gift: oklch(0.68 0.24 355);
   --k-antidote: oklch(0.82 0.2 135);
   --k-trick: oklch(0.74 0.19 50);
@@ -69,7 +69,8 @@
   --k-draw: oklch(0.88 0.17 92);
   --k-useless: oklch(0.7 0.05 70);
   --shadow-sticker: 0 4px 0 var(--ink);
-  --gradient-slime: radial-gradient(circle at 50% 0%, oklch(0.32 0.09 145), var(--background) 70%);
+  --gradient-slime: radial-gradient(ellipse at 50% 40%, oklch(0.38 0.16 315), var(--background) 75%);
+  --glow-neon: 0 0 0 2px var(--primary), 0 0 14px color-mix(in oklab, var(--primary) 60%, transparent);
 }
 
 @layer base {
@@ -120,4 +121,11 @@
 }
 @utility animate-wobble {
   animation: wobble 2.4s ease-in-out infinite;
+}
+
+/* Zone de tapis : contour vert néon comme le tapis officiel */
+@utility zone-neon {
+  border-radius: 0.9rem;
+  box-shadow: var(--glow-neon);
+  background: color-mix(in oklab, var(--background) 70%, transparent);
 }
