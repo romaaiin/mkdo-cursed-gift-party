@@ -26,11 +26,14 @@ import { Button } from "@/components/ui/button";
 import { ArrowDownToLine, Maximize, Minimize, X } from "lucide-react";
 import table from "@/assets/game-table.jpg";
 import { cardArt } from "./card-art";
+import { SettingsControl, useGameSettings } from "./GameSettings";
 
 const BOT_NAMES = ["Gros Bulot", "Tata Yolande", "Momie Touthanpéku"];
 const ME = "p0";
 
 export function GameBoard({ bots }: { bots: number }) {
+  const { preferences, setGameActive, sound } = useGameSettings();
+  useEffect(() => { setGameActive(true); return () => setGameActive(false); }, [setGameActive]);
   const newGame = () =>
     createGame([
       { name: "Toi", isAI: false },
@@ -44,6 +47,11 @@ export function GameBoard({ bots }: { bots: number }) {
   const [expanded, setExpanded] = useState(false);
 
   useEffect(() => setS(newGame()), [bots]); // client-only shuffle
+
+  useEffect(() => {
+    if (!s) return;
+    sound(s.winner ? "win" : s.pending?.to === ME ? "attack" : "turn");
+  }, [s?.seq, s?.pending, s?.winner]);
 
   // Drive AI turns and AI ripostes
   useEffect(() => {
@@ -84,6 +92,7 @@ export function GameBoard({ bots }: { bots: number }) {
   };
 
   const open = (c: Card) => {
+    sound("card");
     setErr(null);
     setSel(sel === c.id ? null : c.id);
     if (c.kind === "antidote") {
@@ -111,11 +120,12 @@ export function GameBoard({ bots }: { bots: number }) {
 
   return (
     <main className="landscape-shell">
-      <div className="game-stage">
+      <div className="game-stage" data-animations={preferences.animations ? "on" : "off"}>
         <img className="table-art" src={table} alt="" />
         <header className="game-topbar">
           <Link to="/" className="game-brand font-display">Maudits <span className="text-secondary">Cadeaux</span></Link>
           <div className="game-tools">
+            <SettingsControl />
             <Button size="icon" variant="outline" title="Plein écran" aria-label="Plein écran" onClick={fullscreen}>{expanded ? <Minimize /> : <Maximize />}</Button>
             <Button size="icon" variant="outline" asChild><Link to="/" aria-label="Quitter la partie" title="Quitter la partie"><X /></Link></Button>
           </div>
