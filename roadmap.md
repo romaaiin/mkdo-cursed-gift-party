@@ -3,3 +3,5 @@
 - [x] Vérifier sélection, jeu d’une carte, riposte et affichage téléphone/ordinateur.
 - [x] Remonter les adversaires latéraux pour séparer leurs informations de celles du joueur.
 - [x] Installer deux fonds distincts pour la partie et l’accueil, puis vérifier l’affichage.
+- [ ] Ajouter les réglages musique, effets sonores et animations, et vérifier leur fonctionnement.
+- [ ] Présenter les règles complètes en paysage avec les pouvoirs officiels et les différences de la version actuelle.
