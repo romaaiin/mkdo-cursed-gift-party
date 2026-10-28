@@ -5,3 +5,5 @@
 - [x] Installer deux fonds distincts pour la partie et l’accueil, puis vérifier l’affichage.
 - [x] Ajouter les réglages musique, effets sonores et animations, et vérifier leur fonctionnement.
 - [x] Présenter les règles complètes en paysage avec les pouvoirs officiels et les différences de la version actuelle.
+- [x] Ajouter un tutoriel de première partie, des conseils contextuels et la possibilité de le relancer.
+- [x] Vérifier le parcours guidé et son affichage en paysage sur téléphone.

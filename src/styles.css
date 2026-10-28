@@ -219,6 +219,20 @@
 .lobby-settings { position: absolute; top: 14px; right: 14px; z-index: 10; }
 .settings-overlay { position: fixed; z-index: 50; }
 .settings-dialog { display: block; width: min(380px, 90%); }
+.tutorial-intro { display: block; width: min(480px, 90%); }
+.tutorial-intro .tutorial-copy { font-size: 15px; line-height: 1.5; margin-top: 12px; }
+.tutorial-panel { position: absolute; z-index: 12; top: 36%; left: 50%; transform: translateX(-50%); width: 44%; max-height: 29%; overflow-y: auto; padding: 10px 12px; background: var(--popover); border: 1px solid var(--primary); border-radius: 8px; box-shadow: var(--shadow-game-card); }
+.tutorial-copy { font-size: 12px; line-height: 1.4; margin-top: 4px; }
+.tutorial-inline { font-size: 12px; line-height: 1.4; border-left: 3px solid var(--primary); padding: 8px 10px; margin-bottom: 12px; background: var(--background); }
+.tutorial-active .table-center, .tutorial-active .turn-status { visibility: hidden; }
+.game-stage[data-tutorial-target="hand"] .hand-area { outline: 2px solid var(--primary); outline-offset: -3px; border-radius: 8px; }
+.game-stage[data-tutorial-target="finish"] .finish-turn, .game-stage[data-tutorial-target="gauge"] .player-gauge, .game-stage[data-tutorial-target="opponents"] .opponent-name { box-shadow: var(--glow-neon); border-radius: 6px; }
+@media (max-height: 430px) and (orientation: landscape), (max-width: 430px) and (orientation: portrait) {
+  .tutorial-panel { top: 31%; max-height: 34%; padding: 6px 8px; }
+  .tutorial-panel h2 { font-size: 12px; }
+  .tutorial-copy { font-size: 11px; line-height: 1.3; }
+  .tutorial-inline { padding: 6px 8px; margin-bottom: 8px; font-size: 11px; }
+}
 .settings-row { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 16px 0; border-bottom: 1px solid var(--border); font-weight: 600; font-size: 15px; }
 .settings-row:last-child { border-bottom: 0; }
 .game-stage[data-animations="off"] *, .game-stage[data-animations="off"] *::before, .game-stage[data-animations="off"] *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
