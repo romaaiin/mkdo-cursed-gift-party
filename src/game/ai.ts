@@ -19,7 +19,9 @@ import { ATTACH_BONUS } from "./cards";
 /** One AI action; returns the next state (always progresses). */
 export function aiStep(s: GameState): GameState {
   const me = s.players[s.current]!;
-  const foes = s.players.filter((p) => p.alive && p.id !== me.id && !p.shielded);
+  const foes = s.players.filter((p) => p.alive && p.id !== me.id);
+  const giftable = foes.filter((p) => !p.shielded);
+  const weakestGiftable = [...giftable].sort((a, b) => gaugeTotal(b) - gaugeTotal(a))[0];
   const weakest = [...foes].sort((a, b) => gaugeTotal(b) - gaugeTotal(a))[0];
   const tryDo = (f: () => GameState) => {
     try {
@@ -52,15 +54,15 @@ export function aiStep(s: GameState): GameState {
       const t = me.hand.find((c) => c.effect === "tresor");
       if (t) return playDraw(s, me.id, t.id);
     }
-    if (!s.giftGiven && weakest) {
+    if (!s.giftGiven && weakestGiftable) {
       const gifts = me.hand.filter((c) => c.kind === "gift").sort((a, b) => b.value! - a.value!);
       if (gifts.length) {
-        const r = tryDo(() => playGift(s, me.id, gifts[0]!.id, weakest.id));
+        const r = tryDo(() => playGift(s, me.id, gifts[0]!.id, weakestGiftable.id));
         if (r) return r;
       }
       const useless = me.hand.filter((c) => c.kind === "useless");
       if (useless.length >= 2 && useless.length !== 3 && s.playsLeft >= 2) {
-        const r = tryDo(() => playUselessCombo(s, me.id, [useless[0]!.id, useless[1]!.id], weakest.id));
+        const r = tryDo(() => playUselessCombo(s, me.id, [useless[0]!.id, useless[1]!.id], weakestGiftable.id));
         if (r) return r;
       }
     }

@@ -119,11 +119,11 @@ function assertTurn(s: GameState, pid: string, cost = 1) {
   if (s.playsLeft < cost) throw new GameError("Tu as déjà joué 3 cartes ce tour");
 }
 
-function assertTarget(s: GameState, pid: string, tid: string) {
+function assertTarget(s: GameState, pid: string, tid: string, gift = false) {
   if (pid === tid) throw new GameError("Interdit de s'offrir un cadeau à soi-même !");
   const t = P(s, tid);
   if (!t.alive) throw new GameError("Ce joueur est déjà éliminé");
-  if (t.shielded) throw new GameError(`${t.name} est protégé(e) par le Yéti ❄️`);
+  if (gift && t.shielded) throw new GameError(`${t.name} est protégé(e) par le Yéti ❄️`);
 }
 
 export function riposteOptions(s: GameState, pid: string): RiposteChoice[] {
@@ -152,7 +152,7 @@ function checkElim(s: GameState, p: Player) {
 
 function deliver(s: GameState, pend: Pending) {
   const target = P(s, pend.to);
-  if (target.shielded) {
+  if (target.shielded && pend.type === "gift") {
     s.discard.push(...(pend.type === "gift" ? [...pend.item.base] : [pend.card]));
     log(s, `❄️ ${target.name} est à l'abri chez le Yéti !`);
     return;
@@ -254,7 +254,7 @@ export function playGift(st: GameState, pid: string, cardId: string, tid: string
   const s = clone(st);
   assertTurn(s, pid);
   if (s.giftGiven) throw new GameError("Un seul Maudit Cadeau par tour !");
-  assertTarget(s, pid, tid);
+  assertTarget(s, pid, tid, true);
   const p = P(s, pid);
   const c = p.hand.find((x) => x.id === cardId);
   if (!c || c.kind !== "gift") throw new GameError("Ce n'est pas un Maudit Cadeau");
@@ -270,7 +270,7 @@ export function playUselessCombo(st: GameState, pid: string, ids: string[], tid:
   const s = clone(st);
   assertTurn(s, pid, 2);
   if (s.giftGiven) throw new GameError("Un seul Maudit Cadeau par tour !");
-  assertTarget(s, pid, tid);
+  assertTarget(s, pid, tid, true);
   const p = P(s, pid);
   if (ids.length !== 2) throw new GameError("Il faut 2 Cadeaux Inutiles");
   const cards = ids.map((id) => {
