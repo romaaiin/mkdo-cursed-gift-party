@@ -77,7 +77,7 @@ export function buildDeck(): Card[] {
   add(2, { kind: "trick", effect: "deuil", name: "Jour de deuil", emoji: "⚰️", desc: "Un adversaire défausse 2 cartes au hasard." });
 
   add(2, { kind: "defense", effect: "sirene", name: "Sirène d'urgence", emoji: "🚨", desc: "Défausse le plus gros Maudit Cadeau de ta jauge." });
-  add(3, { kind: "defense", effect: "protection", riposte: true, name: "Protection de la Raie", emoji: "🐟", desc: "RIPOSTE : annule un Maudit Cadeau ou une Fourberie qui te vise." });
+  add(3, { kind: "defense", effect: "protection", riposte: true, name: "Protection de la Raie", emoji: "🐟", desc: "RIPOSTE : te protège d'une Fourberie ou d'un Maudit Cadeau que l'on t'offre." });
   add(3, { kind: "defense", effect: "cacarma", riposte: true, name: "Cacarma", emoji: "🔄", desc: "RIPOSTE : renvoie une Fourberie ou un Maudit Cadeau vers son lanceur." });
   add(2, { kind: "defense", effect: "yeti", name: "Bienvenue chez l'Yéti", emoji: "❄️", desc: "Les autres joueurs ne peuvent pas t'offrir de Maudit Cadeau pendant un tour de jeu complet." });
 
