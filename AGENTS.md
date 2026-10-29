@@ -16,3 +16,4 @@
 - The landscape rules guide distinguishes official card powers from provisional solo behavior so documentation never silently legitimizes unimplemented rules.
 - First-game guidance derives its steps from real game state and completed actions; keep completion device-local and never alter deals or rules to force tutorial events.
 - PlayerHand owns bounded horizontal scrolling and overflow controls; large hands use a flatter fan so every card stays accessible outside the end-turn control.
+- Player profile and finished-game history are device-local (browser storage via src/game/profile.ts) until online mode adds accounts.
