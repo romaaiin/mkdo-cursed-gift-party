@@ -120,12 +120,12 @@ describe("Maudits Cadeaux rules", () => {
     expect(gaugeTotal(r.players[1]!)).toBe(5);
   });
 
-  it("Bienvenue chez l'Yéti blocks gifts until the next turn", () => {
+  it("Bienvenue chez l'Yéti makes the player untargetable until the next turn", () => {
     const yeti: Card = { id: "y", kind: "defense", effect: "yeti", name: "Y", emoji: "", desc: "" };
     const s = setup([yeti], [gift(3)]);
     let r = playSirene(s, "p0", "y");
     r = endTurn(r, "p0");
-    r = playGift(r, "p1", r.players[1]!.hand.find((c) => c.kind === "gift")!.id, "p0");
+    expect(() => playGift(r, "p1", r.players[1]!.hand.find((c) => c.kind === "gift")!.id, "p0")).toThrow();
     expect(gaugeTotal(r.players[0]!)).toBe(0);
   });
 });

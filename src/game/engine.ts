@@ -121,7 +121,9 @@ function assertTurn(s: GameState, pid: string, cost = 1) {
 
 function assertTarget(s: GameState, pid: string, tid: string) {
   if (pid === tid) throw new GameError("Interdit de s'offrir un cadeau à soi-même !");
-  if (!P(s, tid).alive) throw new GameError("Ce joueur est déjà éliminé");
+  const t = P(s, tid);
+  if (!t.alive) throw new GameError("Ce joueur est déjà éliminé");
+  if (t.shielded) throw new GameError(`${t.name} est protégé(e) par le Yéti ❄️`);
 }
 
 export function riposteOptions(s: GameState, pid: string): RiposteChoice[] {
