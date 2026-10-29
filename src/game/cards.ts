@@ -67,14 +67,14 @@ export function buildDeck(): Card[] {
       desc: `Guérit exactement ${v} pt${v > 1 ? "s" : ""} de Maudits Cadeaux dans ta jauge.`,
     });
 
-  add(3, { kind: "trick", effect: "magichien", name: "Magichien d'Os", emoji: "🐕", desc: "Refile ton plus gros Maudit Cadeau (avec ses Fourberies) à un adversaire." });
+  add(3, { kind: "trick", effect: "magichien", name: "Magichien d'Os", emoji: "🐕", desc: "Choisis une Fourberie dans les 4 premières cartes de la Défausse Septique. Reproduis immédiatement son pouvoir." });
   add(2, { kind: "trick", effect: "momie", name: "Momie Touthanpéku", emoji: "🧻", desc: "Pose-la sur un Maudit Cadeau d'un adversaire : +3 pts." });
   add(3, { kind: "trick", effect: "vol", name: "Vol à l'arraché", emoji: "🦝", desc: "Vole une carte au hasard dans la main d'un adversaire." });
   add(2, { kind: "trick", effect: "franken", name: "Frankenschlingue", emoji: "🧟", desc: "Un adversaire défausse 1 carte au hasard." });
   add(2, { kind: "trick", effect: "secourge", name: "Au secourge", emoji: "🎃", desc: "Pose-la sur un Maudit Cadeau d'un adversaire : +2 pts." });
   add(3, { kind: "trick", effect: "petgaz", name: "Petgaz à effet de serre", emoji: "💨", desc: "Échange ta main avec celle d'un adversaire." });
   add(3, { kind: "trick", effect: "dramacula", name: "Dramacula", emoji: "🧛", desc: "Pose-la sur un Maudit Cadeau d'un adversaire : +1 pt." });
-  add(2, { kind: "trick", effect: "deuil", name: "Jour de deuil", emoji: "⚰️", desc: "Un adversaire défausse 2 cartes au hasard." });
+  add(2, { kind: "trick", effect: "deuil", name: "Jour de deuil", emoji: "⚰️", desc: "Choisis une carte au hasard dans la main d'un autre joueur et mets-la dans la Défausse Septique." });
 
   add(2, { kind: "defense", effect: "sirene", name: "Sirène d'urgence", emoji: "🚨", desc: "Défausse le plus gros Maudit Cadeau de ta jauge." });
   add(3, { kind: "defense", effect: "protection", riposte: true, name: "Protection de la Raie", emoji: "🐟", desc: "RIPOSTE : te protège d'une Fourberie ou d'un Maudit Cadeau que l'on t'offre." });
