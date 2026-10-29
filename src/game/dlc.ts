@@ -12,6 +12,9 @@ import boules from "@/assets/cards/dlc/boules.jpg.asset.json";
 import renne from "@/assets/cards/dlc/renne.jpg.asset.json";
 import cacadeau from "@/assets/cards/dlc/cacadeau.jpg.asset.json";
 import pairenoel from "@/assets/cards/dlc/pairenoel.jpg.asset.json";
+import touthankarton from "@/assets/cards/dlc/touthankarton.jpg.asset.json";
+import medusale from "@/assets/cards/dlc/medusale.jpg.asset.json";
+import scorpiongle from "@/assets/cards/dlc/scorpiongle.jpg.asset.json";
 
 /** Cartes hors jeu de base, mises de côté pour un futur pack DLC (non jouées). */
 export interface DlcCard { id: string; name: string; kind: "defense" | "useless" | "trick" | "draw"; riposte?: boolean; desc: string; art: string }
@@ -31,4 +34,7 @@ export const DLC_CARDS: DlcCard[] = [
   { id: "renne", name: "Le Renne des Neiges", kind: "defense", desc: "Prends toutes les cartes de ta jauge et mélange-les dans la pioche.", art: renne.url },
   { id: "cacadeau", name: "Cacadeau de Noël", kind: "draw", desc: "Choisis 2 Maudits Cadeaux dans la pioche et mets-les dans ta main. Mélange la pioche et termine ton tour sans piocher.", art: cacadeau.url },
   { id: "pairenoel", name: "La Paire de Noël", kind: "defense", desc: "Choisis 2 Maudits Cadeaux dans ta jauge qui ont la même valeur et mélange-les dans la pioche.", art: pairenoel.url },
+  { id: "touthankarton", name: "Touthankarton", kind: "trick", desc: "Choisis une Fourberie ou une Défense dans une jauge et mets-la dans la Défausse Septique.", art: touthankarton.url },
+  { id: "medusale", name: "Médusale", kind: "trick", desc: "Pose toute ta main face cachée dans la jauge d'un adversaire. Chaque carte devient un Maudit Cadeau de 1 point.", art: medusale.url },
+  { id: "scorpiongle", name: "Scorpiongle de pied", kind: "useless", desc: "Si cette carte est ton signe du zodiaque, joue-la et échange-la contre n'importe quelle carte de la Défausse Septique.", art: scorpiongle.url },
 ];

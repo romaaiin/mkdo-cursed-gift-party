@@ -201,10 +201,8 @@ function resolve(s: GameState, pend: Pending) {
     s.discard.push(c);
     if (!copy) return log(s, `🐕 ${c.name} : aucune Fourberie à reproduire dans la Défausse Septique`);
     log(s, `🐕 ${from.name} reproduit ${copy.name} sur ${to.name}`);
-    if (ATTACH_BONUS[copy.effect!]) s.discard = s.discard.filter((x) => x !== copy);
-    else s.discard.pop();
+    s.discard = s.discard.filter((x) => x !== copy);
     resolve(s, { ...pend, card: copy });
-    if (!ATTACH_BONUS[copy.effect!]) { s.discard = s.discard.filter((x) => x !== copy); s.discard.push(copy, c); }
   } else if (c.effect === "franken") {
     s.discard.push(c);
     if (to.hand.length) s.discard.push(to.hand.splice(Math.floor(Math.random() * to.hand.length), 1)[0]!);
