@@ -10,12 +10,24 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CompteRouteImport } from './routes/compte'
+import { Route as HistoriqueRouteImport } from './routes/historique'
 import { Route as JeuRouteImport } from './routes/jeu'
 import { Route as ReglesRouteImport } from './routes/regles'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompteRoute = CompteRouteImport.update({
+  id: '/compte',
+  path: '/compte',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HistoriqueRoute = HistoriqueRouteImport.update({
+  id: '/historique',
+  path: '/historique',
   getParentRoute: () => rootRouteImport,
 } as any)
 const JeuRoute = JeuRouteImport.update({
@@ -31,30 +43,38 @@ const ReglesRoute = ReglesRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/compte': typeof CompteRoute
+  '/historique': typeof HistoriqueRoute
   '/jeu': typeof JeuRoute
   '/regles': typeof ReglesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/compte': typeof CompteRoute
+  '/historique': typeof HistoriqueRoute
   '/jeu': typeof JeuRoute
   '/regles': typeof ReglesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/compte': typeof CompteRoute
+  '/historique': typeof HistoriqueRoute
   '/jeu': typeof JeuRoute
   '/regles': typeof ReglesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/jeu' | '/regles'
+  fullPaths: '/' | '/compte' | '/historique' | '/jeu' | '/regles'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/jeu' | '/regles'
-  id: '__root__' | '/' | '/jeu' | '/regles'
+  to: '/' | '/compte' | '/historique' | '/jeu' | '/regles'
+  id: '__root__' | '/' | '/compte' | '/historique' | '/jeu' | '/regles'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CompteRoute: typeof CompteRoute
+  HistoriqueRoute: typeof HistoriqueRoute
   JeuRoute: typeof JeuRoute
   ReglesRoute: typeof ReglesRoute
 }
@@ -66,6 +86,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/compte': {
+      id: '/compte'
+      path: '/compte'
+      fullPath: '/compte'
+      preLoaderRoute: typeof CompteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/historique': {
+      id: '/historique'
+      path: '/historique'
+      fullPath: '/historique'
+      preLoaderRoute: typeof HistoriqueRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/jeu': {
@@ -87,6 +121,8 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CompteRoute: CompteRoute,
+  HistoriqueRoute: HistoriqueRoute,
   JeuRoute: JeuRoute,
   ReglesRoute: ReglesRoute,
 }
