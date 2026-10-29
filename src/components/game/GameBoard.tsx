@@ -217,7 +217,6 @@ export function GameBoard({ bots }: { bots: number }) {
         </div>
         <div className="turn-status" aria-live="polite">
           <strong>{myTurn ? "À toi de maudire !" : `${current?.name ?? ""} joue…`}</strong>
-          {timerOn && <span className={cn("turn-timer", left <= 10 && "turn-timer-low")} role="timer" aria-label={`${left} secondes restantes`}><Timer className="h-4 w-4" />{left}s</span>}
           <p>{s.log.at(-1)}</p>
         </div>
 
@@ -228,6 +227,7 @@ export function GameBoard({ bots }: { bots: number }) {
         </section>
         <PlayerHand cards={me.hand} selected={sel} onSelect={open} />
         <div className="finish-turn">
+          {timerOn && <div className="mb-1 flex justify-center"><span className={cn("turn-timer", left <= 10 && "turn-timer-low")} role="timer" aria-label={`${left} secondes restantes`}><Timer className="h-4 w-4" />{left}s</span></div>}
           <Button className="btn-slime h-auto w-full gap-2 px-2 py-3 text-xs whitespace-normal" disabled={!myTurn} onClick={() => act(() => endTurn(s, ME))}><ArrowDownToLine />Finir mon tour</Button>
           <p className="mt-2 text-center text-[10px] text-muted-foreground">{s.giftGiven ? "Cadeau offert" : "Cadeau disponible"}</p>
         </div>
