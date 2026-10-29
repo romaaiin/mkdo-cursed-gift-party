@@ -197,7 +197,8 @@ export function GameBoard({ bots }: { bots: number }) {
               </div>
               <div className="opponent-name text-front flex items-center justify-center gap-2">
                 {art && <img src={art} alt="" className="h-7 w-7 rounded-full object-cover" />}
-                <span className="min-w-0 flex-1 truncate font-display">{f.alive ? f.name : `💀 ${f.name}`}{f.shielded && " ❄️"}</span>
+                <span className="min-w-0 flex-1 truncate font-display">{f.alive ? f.name : `💀 ${f.name}`}</span>
+                {f.shielded && <span role="img" aria-label={`${f.name} est protégé par le Yéti`} title="Protégé par le Yéti : impossible à cibler ce tour" className="shrink-0">❄️</span>}
                 <span className="text-primary">{f.hand.length}</span>
               </div>
               <div className="mt-1"><Gauge player={f} compact /><span className="text-front text-[10px]">{gaugeTotal(f)} / 10</span></div>
@@ -275,15 +276,19 @@ function ActionPanel({
 }) {
   const me = s.players.find((p) => p.id === ME);
   if (!me) return null;
-  const Targets = ({ onPick }: { onPick: (id: string) => void }) => (
-    <div className="flex flex-wrap gap-2">
-      {aliveFoes.map((f) => (
-        <Button key={f.id} className="btn-slime px-4 py-2 text-sm" onClick={() => onPick(f.id)}>
-          {f.name} ({gaugeTotal(f)})
-        </Button>
-      ))}
-    </div>
-  );
+  const Targets = ({ onPick }: { onPick: (id: string) => void }) => {
+    const targets = aliveFoes.filter((f) => !f.shielded);
+    if (!targets.length) return <p className="text-xs text-muted-foreground">Tous tes adversaires sont protégés par le Yéti ❄️ — attends le prochain tour.</p>;
+    return (
+      <div className="flex flex-wrap gap-2">
+        {targets.map((f) => (
+          <Button key={f.id} className="btn-slime px-4 py-2 text-sm" onClick={() => onPick(f.id)}>
+            {f.name} ({gaugeTotal(f)})
+          </Button>
+        ))}
+      </div>
+    );
+  };
   const toggle = (arr: string[], id: string) => (arr.includes(id) ? arr.filter((x) => x !== id) : [...arr, id]);
 
   let body: React.ReactNode = null;
