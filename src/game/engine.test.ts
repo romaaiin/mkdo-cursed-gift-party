@@ -31,13 +31,13 @@ const trick = (effect: string): Card => ({ id: `t${n++}`, kind: "trick", effect:
 
 describe("Maudits Cadeaux rules", () => {
   it("Jour de deuil discards exactly one card from the target's hand", () => {
-    const s = setup([trick("deuil")], [useless(), useless(), useless()]);
+    const s = setup([trick("deuil")], [anti(1), anti(1), anti(1)]);
     const r = playTrick(s, "p0", s.players[0]!.hand[0]!.id, "p1");
     expect(r.players[1]!.hand.length).toBe(2);
   });
 
   it("Magichien d'Os copies a Fourberie from the top 4 of the discard", () => {
-    const s = setup([trick("magichien")], [useless(), useless(), useless()]);
+    const s = setup([trick("magichien")], [anti(1), anti(1), anti(1)]);
     s.discard.push(trick("deuil"), useless(), useless());
     const r = playTrick(s, "p0", s.players[0]!.hand[0]!.id, "p1");
     expect(r.players[1]!.hand.length).toBe(2);
