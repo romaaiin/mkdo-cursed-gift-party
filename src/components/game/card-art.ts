@@ -35,3 +35,13 @@ export function cardArt(card: Card): string | undefined {
   if (card.kind === "useless") return useless[card.name];
   return card.effect ? effects[card.effect] : undefined;
 }
+/** Profile pictures chosen among the supplied card illustrations. */
+export const AVATARS: { id: string; label: string; url: string }[] = [
+  { id: "gift", label: "Maudit Cadeau", url: gift.url },
+  { id: "antidote", label: "Antidote", url: antidote.url },
+  { id: "rouleau", label: "Rouleau de pique-cul", url: rouleau.url },
+  { id: "grimoire", label: "Grimoire des furoncles", url: grimoire.url },
+  { id: "lingots", label: "Lingots de bave", url: lingots.url },
+  ...Object.entries({ cacarma: "Cacarma", deuil: "Jour de deuil", dramacula: "Dramacula", franken: "Frankenschlingue", magichien: "Magichien d'Os", momie: "Momie", petgaz: "Petgaz", protection: "Protection de la raie", sirene: "Sirène d'urgence", tresor: "Faculeux trésor", vol: "Vol à l'arraché" }).map(([id, label]) => ({ id, label, url: effects[id]! })),
+];
+export const avatarUrl = (id: string) => (AVATARS.find(a => a.id === id) ?? AVATARS[0]!).url;
