@@ -27,7 +27,7 @@ function setup(h0: Card[], h1: Card[], players = 2): GameState {
   return s;
 }
 
-const trick = (effect: string): Card => ({ id: `t${n++}`, kind: "trick", effect: effect as Card["effect"], name: effect, emoji: "", desc: "" });
+const trick = (effect: string): Card => ({ id: `t${n++}`, kind: "trick", effect: effect as NonNullable<Card["effect"]>, name: effect, emoji: "", desc: "" });
 
 describe("Maudits Cadeaux rules", () => {
   it("Jour de deuil discards exactly one card from the target's hand", () => {
