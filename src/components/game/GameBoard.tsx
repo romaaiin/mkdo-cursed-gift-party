@@ -198,7 +198,7 @@ export function GameBoard({ bots }: { bots: number }) {
               <div className="opponent-name text-front flex items-center justify-center gap-2">
                 {art && <img src={art} alt="" className="h-7 w-7 rounded-full object-cover" />}
                 <span className="min-w-0 flex-1 truncate font-display">{f.alive ? f.name : `💀 ${f.name}`}</span>
-                {f.shielded && <span role="img" aria-label={`${f.name} est protégé par le Yéti`} title="Protégé par le Yéti : impossible à cibler ce tour" className="shrink-0">❄️</span>}
+                {f.shielded && <span role="img" aria-label={`${f.name} est protégé par le Yéti`} title="Chez le Yéti : impossible de lui offrir un Maudit Cadeau ce tour" className="shrink-0">❄️</span>}
                 <span className="text-primary">{f.hand.length}</span>
               </div>
               <div className="mt-1"><Gauge player={f} compact /><span className="text-front text-[10px]">{gaugeTotal(f)} / 10</span></div>
@@ -276,9 +276,9 @@ function ActionPanel({
 }) {
   const me = s.players.find((p) => p.id === ME);
   if (!me) return null;
-  const Targets = ({ onPick }: { onPick: (id: string) => void }) => {
-    const targets = aliveFoes.filter((f) => !f.shielded);
-    if (!targets.length) return <p className="text-xs text-muted-foreground">Tous tes adversaires sont protégés par le Yéti ❄️ — attends le prochain tour.</p>;
+  const Targets = ({ onPick, gift = false }: { onPick: (id: string) => void; gift?: boolean }) => {
+    const targets = gift ? aliveFoes.filter((f) => !f.shielded) : aliveFoes;
+    if (!targets.length) return <p className="text-xs text-muted-foreground">Tous tes adversaires sont chez le Yéti ❄️ : impossible de leur offrir un Maudit Cadeau ce tour.</p>;
     return (
       <div className="flex flex-wrap gap-2">
         {targets.map((f) => (
@@ -292,12 +292,12 @@ function ActionPanel({
   const toggle = (arr: string[], id: string) => (arr.includes(id) ? arr.filter((x) => x !== id) : [...arr, id]);
 
   let body: React.ReactNode = null;
-  if (card.kind === "gift") body = <><p>Offrir à :</p><Targets onPick={(t) => act(() => playGift(s, ME, card.id, t))} /></>;
+  if (card.kind === "gift") body = <><p>Offrir à :</p><Targets gift onPick={(t) => act(() => playGift(s, ME, card.id, t))} /></>;
   else if (card.kind === "useless")
     body = useless.length >= 2 ? (
       <>
         <p>Combo 2 Inutiles → Maudit Cadeau 1 pt Inévitable (2 coups) :</p>
-        <Targets onPick={(t) => act(() => playUselessCombo(s, ME, [card.id, useless.find((u) => u.id !== card.id)?.id ?? ""], t))} />
+        <Targets gift onPick={(t) => act(() => playUselessCombo(s, ME, [card.id, useless.find((u) => u.id !== card.id)?.id ?? ""], t))} />
       </>
     ) : <p>Inutile seul… Garde-en 2 pour un combo, ou 3 pour un Cacarma.</p>;
   else if (card.kind === "trick")
