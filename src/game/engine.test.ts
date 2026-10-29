@@ -27,7 +27,28 @@ function setup(h0: Card[], h1: Card[], players = 2): GameState {
   return s;
 }
 
+const trick = (effect: string): Card => ({ id: `t${n++}`, kind: "trick", effect: effect as Card["effect"], name: effect, emoji: "", desc: "" });
+
 describe("Maudits Cadeaux rules", () => {
+  it("Jour de deuil discards exactly one card from the target's hand", () => {
+    const s = setup([trick("deuil")], [useless(), useless(), useless()]);
+    const r = playTrick(s, "p0", s.players[0]!.hand[0]!.id, "p1");
+    expect(r.players[1]!.hand.length).toBe(2);
+  });
+
+  it("Magichien d'Os copies a Fourberie from the top 4 of the discard", () => {
+    const s = setup([trick("magichien")], [useless(), useless(), useless()]);
+    s.discard.push(trick("deuil"), useless(), useless());
+    const r = playTrick(s, "p0", s.players[0]!.hand[0]!.id, "p1");
+    expect(r.players[1]!.hand.length).toBe(2);
+  });
+
+  it("Magichien d'Os cannot be played without a Fourberie in the top 4", () => {
+    const s = setup([trick("magichien")], [useless()]);
+    s.discard.push(trick("deuil"), useless(), useless(), useless(), useless());
+    expect(() => playTrick(s, "p0", s.players[0]!.hand[0]!.id, "p1")).toThrow();
+  });
+
   it("deals 7 cards to each player", () => {
     const s = createGame([{ name: "a", isAI: false }, { name: "b", isAI: true }]);
     expect(s.players.every((p) => p.hand.length === 7)).toBe(true);
