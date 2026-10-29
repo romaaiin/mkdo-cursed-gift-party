@@ -36,7 +36,7 @@ import { addRecord, HISTORY_KEY, loadLocal, parseHistory, parseProfile, PROFILE_
 import { avatarUrl } from "./card-art";
 import { Timer } from "lucide-react";
 
-const BOT_NAMES = ["Gros Bulot", "Tata Yolande", "Momie Touthanpéku"];
+import { pickBotNames } from "@/game/bot-names";
 const ME = "p0";
 
 export function GameBoard({ bots }: { bots: number }) {
@@ -46,7 +46,7 @@ export function GameBoard({ bots }: { bots: number }) {
   const newGame = () =>
     createGame([
       { name: profile.name, isAI: false },
-      ...BOT_NAMES.slice(0, bots).map((name) => ({ name, isAI: true })),
+      ...pickBotNames(bots).map((name) => ({ name, isAI: true })),
     ]);
   const [s, setS] = useState<GameState | null>(null);
   const [sel, setSel] = useState<string | null>(null);
