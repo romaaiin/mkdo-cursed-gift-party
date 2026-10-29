@@ -148,7 +148,8 @@
   overflow: hidden;
   background: var(--background);
   --top-safe: 158px;
-  --hand-h: 176px;
+  --arc-pad: 20px;
+  --hand-h: 170px;
   --lift: 26px;
   --status-band: 30px;
   --stack-gap: 8px;
@@ -198,7 +199,7 @@
 .finish-turn { position: absolute; bottom: 20px; right: 16px; z-index: 26; width: 156px; }
 .hand-area { position: absolute; bottom: 0; left: 175px; right: 175px; height: var(--hand-h); overflow: visible; }
 .hand-scroll { position: absolute; inset: calc(-1 * var(--lift)) 0 0; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scrollbar-width: thin; scrollbar-color: var(--primary) var(--background); }
-.hand-fan { display: flex; align-items: flex-start; justify-content: center; width: max-content; min-width: 100%; height: 100%; padding: 8px 42px 0; }
+.hand-fan { display: flex; align-items: flex-end; justify-content: center; width: max-content; min-width: 100%; height: 100%; padding: 0 42px var(--arc-pad); }
 .hand-many .fan-card + .fan-card { margin-left: -20px; }
 .hand-arrow { position: absolute; top: calc(-1 * var(--lift)); z-index: 28; width: 28px; height: 28px; }
 .hand-arrow-left { left: 0; }
@@ -222,20 +223,19 @@
 
 /* ============ Palier large (tablette / ordinateur en paysage) ============ */
 @media (min-height: 600px) and (orientation: landscape) {
-  .game-stage { --top-safe: 214px; --hand-h: 214px; --lift: 30px; --status-band: 34px; --pile-max: 150px; }
+  .game-stage { --top-safe: 214px; --arc-pad: 20px; --hand-h: 208px; --lift: 30px; --status-band: 34px; --pile-max: 150px; }
   .opponent-top { top: 70px; }
   .opponent { width: 190px; }
   .opponent-hand { height: 72px; }
   .opponent-hand .card-back { width: 48px; height: 68px; }
   .table-center { gap: 38px; }
-  .hand-fan { padding-top: 18px; }
   .hand-fan .game-card { width: 126px; height: 188px; font-size: 13px; }
   .fan-card + .fan-card { margin-left: -52px; }
 }
 
 /* ============ Palier compact (téléphone en paysage, tablette en portrait) ============ */
 @media (max-height: 599px) and (orientation: landscape), (max-width: 599px) and (orientation: portrait) {
-  .game-stage { --top-safe: 150px; --hand-h: 158px; --lift: 24px; --status-band: 26px; --pile-max: 118px; }
+  .game-stage { --top-safe: 150px; --arc-pad: 18px; --hand-h: 150px; --lift: 24px; --status-band: 26px; --pile-max: 118px; }
   .opponent-top { top: 40px; }
   .opponent { width: 160px; }
   .opponent-hand { height: 44px; }
@@ -249,7 +249,7 @@
 
 /* ============ Palier très serré (téléphone, petit paysage) ============ */
 @media (max-height: 430px) and (orientation: landscape), (max-width: 430px) and (orientation: portrait) {
-  .game-stage { --top-safe: 124px; --hand-h: 116px; --lift: 20px; --status-band: 18px; --pile-max: 88px; --fan-scale: .55; }
+  .game-stage { --top-safe: 124px; --arc-pad: 12px; --hand-h: 108px; --lift: 20px; --status-band: 18px; --pile-max: 88px; --fan-scale: .55; }
   .opponent-top { top: 32px; }
   .opponent { width: 140px; }
   .opponent-left { top: 16%; }
@@ -263,7 +263,7 @@
   .turn-status { font-size: 10px; }
   .turn-status p { display: none; }
   .turn-status strong { font-size: 12px; margin-bottom: 0; }
-  .hand-fan { padding: 6px 30px 0; }
+  .hand-fan { padding-inline: 30px; padding-bottom: var(--arc-pad); }
   .hand-fan .game-card { width: 72px; height: 96px; font-size: 9px; }
   .hand-fan .game-card .card-category { font-size: 7px; }
   .fan-card + .fan-card { margin-left: -40px; }
