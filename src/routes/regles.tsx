@@ -63,7 +63,8 @@ const chapters = [
     ["Dramacula", "Carte fournie : le prochain cadeau offert gagne 1 point. Solo actuel : ajoute 1 point à un cadeau déjà dans la jauge adverse."],
     ["Sirène d’urgence", "Carte fournie : choisis un cadeau de ta jauge et mélange-le dans la pioche. Solo actuel : retire ton plus gros cadeau et le place dans la défausse."],
     ["Faculeux trésor", "Carte fournie : joue-la en premier, ne fais aucune autre action et termine ton tour en piochant 2 cartes. Solo actuel : pioche 3 cartes et termine immédiatement le tour."],
-    ["Au secourge & Bienvenue chez l’Yéti", "Pouvoirs officiels à confirmer : leurs visuels manquent. Solo actuel : Au secourge ajoute 2 points à un cadeau adverse ; le Yéti te met à l’abri jusqu’au début de ton prochain tour."],
+    ["Bienvenue chez l’Yéti", "Carte fournie : les autres joueurs ne peuvent pas t’offrir de Maudit Cadeau pendant un tour de jeu complet. Les Fourberies peuvent toujours te viser."],
+    ["Au secourge", "Pouvoir officiel à confirmer : visuel manquant. Solo actuel : ajoute 2 points à un cadeau adverse."],
     ["Cartes hors du jeu de base", "Cacam ikaze, Va te faire tentaculer et les autres cartes additionnelles visibles dans certains visuels ne font pas partie des 63 cartes du jeu de base actuel."],
   ] },
   { title: "Fin & questions", icon: CircleHelp, heading: "Les réponses aux situations fréquentes", sections: [
