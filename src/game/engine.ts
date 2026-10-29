@@ -153,7 +153,7 @@ function checkElim(s: GameState, p: Player) {
 function deliver(s: GameState, pend: Pending) {
   const target = P(s, pend.to);
   if (target.shielded && pend.type === "gift") {
-    s.discard.push(...(pend.type === "gift" ? [...pend.item.base] : [pend.card]));
+    s.discard.push(...pend.item.base);
     log(s, `❄️ ${target.name} est à l'abri chez le Yéti !`);
     return;
   }
