@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import background from "@/assets/lobby-background.jpg";
 import { Button } from "@/components/ui/button";
-import { Play, BookOpen } from "lucide-react";
+import { Play, BookOpen, UserRound, History } from "lucide-react";
 import { SettingsControl } from "@/components/game/GameSettings";
 
 export const Route = createFileRoute("/")({
@@ -52,7 +52,7 @@ function Index() {
           En ligne — bientôt
         </Button>
       </div>
-      <Button variant="link" asChild className="text-accent"><Link to="/regles"><BookOpen />Les règles</Link></Button>
+      <div className="flex flex-wrap justify-center"><Button variant="link" asChild className="text-accent"><Link to="/regles"><BookOpen />Les règles</Link></Button><Button variant="link" asChild className="text-accent"><Link to="/compte"><UserRound />Mon compte</Link></Button><Button variant="link" asChild className="text-accent"><Link to="/historique"><History />Historique</Link></Button></div>
       </div>
       </div>
     </main>
