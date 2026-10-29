@@ -180,6 +180,7 @@
 .card-back::after { content: "MKDO"; transform: rotate(-20deg); border: 1px solid var(--secondary); border-radius: 50%; padding: 8px 1px; }
 .table-center {
   position: absolute;
+  z-index: 22;
   left: 0;
   right: 0;
   top: var(--top-safe);
