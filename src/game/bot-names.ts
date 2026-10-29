@@ -21,7 +21,7 @@ export const BOT_NAMES = [
   "Bouh Dumas",
   "Tête de Mort Vivant",
   "Poulpe Comptoir",
-] as const;
+];
 
 /** Mélange la réserve et renvoie `count` noms distincts. */
 export function pickBotNames(count: number): string[] {
