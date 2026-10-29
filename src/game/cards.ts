@@ -78,7 +78,7 @@ export function buildDeck(): Card[] {
 
   add(2, { kind: "defense", effect: "sirene", name: "Sirène d'urgence", emoji: "🚨", desc: "Défausse le plus gros Maudit Cadeau de ta jauge." });
   add(3, { kind: "defense", effect: "protection", riposte: true, name: "Protection de la Raie", emoji: "🐟", desc: "RIPOSTE : annule un Maudit Cadeau ou une Fourberie qui te vise." });
-  add(3, { kind: "defense", effect: "cacarma", riposte: true, name: "Cacarma", emoji: "🔄", desc: "RIPOSTE : renvoie le Maudit Cadeau ou la Fourberie à l'envoyeur." });
+  add(3, { kind: "defense", effect: "cacarma", riposte: true, name: "Cacarma", emoji: "🔄", desc: "RIPOSTE : renvoie une Fourberie ou un Maudit Cadeau vers son lanceur." });
   add(2, { kind: "defense", effect: "yeti", name: "Bienvenue chez l'Yéti", emoji: "❄️", desc: "Tu es à l'abri : rien ne peut t'atteindre jusqu'à ton prochain tour." });
 
   add(3, { kind: "draw", effect: "tresor", name: "Faculeux trésor", emoji: "🌈", desc: "En premier coup du tour : pioche 3 cartes, puis ton tour s'arrête." });
