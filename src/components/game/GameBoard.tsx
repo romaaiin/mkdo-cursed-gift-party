@@ -174,7 +174,7 @@ export function GameBoard({ bots }: { bots: number }) {
 
   return (
     <main className="landscape-shell">
-      <div className={cn("game-stage", guided && "tutorial-active")} data-tutorial-target={guided ? TUTORIAL_LESSONS[step].target : undefined} data-animations={preferences.animations ? "on" : "off"}>
+      <div className={cn("game-stage", guided && "tutorial-active")} data-foes={foes.length} data-tutorial-target={guided ? TUTORIAL_LESSONS[step].target : undefined} data-animations={preferences.animations ? "on" : "off"}>
         <img className="table-art" src={table} alt="" />
         <header className="game-topbar">
           <Link to="/" className="game-brand font-display">Maudits <span className="text-secondary">Cadeaux</span></Link>
@@ -195,12 +195,12 @@ export function GameBoard({ bots }: { bots: number }) {
               <div className="opponent-hand" aria-label={`${f.hand.length} cartes cachées`}>
                 {Array.from({ length: Math.min(f.hand.length, 7) }, (_, j) => <span key={j} className="card-back" />)}
               </div>
-              <div className="opponent-name flex items-center justify-center gap-2">
+              <div className="opponent-name text-front flex items-center justify-center gap-2">
                 {art && <img src={art} alt="" className="h-7 w-7 rounded-full object-cover" />}
                 <span className="min-w-0 flex-1 truncate font-display">{f.alive ? f.name : `💀 ${f.name}`}{f.shielded && " ❄️"}</span>
                 <span className="text-primary">{f.hand.length}</span>
               </div>
-              <div className="mt-1"><Gauge player={f} compact /><span className="text-[10px]">{gaugeTotal(f)} / 10</span></div>
+              <div className="mt-1"><Gauge player={f} compact /><span className="text-front text-[10px]">{gaugeTotal(f)} / 10</span></div>
             </section>
           );
         })}
@@ -208,11 +208,11 @@ export function GameBoard({ bots }: { bots: number }) {
         <div className="table-center">
           <div className="table-pile">
             <Button variant="ghost" className="h-auto p-0 hover:bg-transparent" disabled={!myTurn} aria-label="Piocher et finir mon tour" title="Piocher et finir mon tour" onClick={() => act(() => endTurn(s, ME))}><span className="card-back" /></Button>
-            <span>Pioche · {s.deck.length}</span>
+            <span className="text-front">Pioche · {s.deck.length}</span>
           </div>
           <div className="table-pile">
             {discard ? <CardView card={discard} size="sm" /> : <div className="discard-empty" />}
-            <span>Défausse Septique</span>
+            <span className="text-front">Défausse Septique</span>
           </div>
         </div>
         <div className="turn-status" aria-live="polite">
@@ -221,15 +221,15 @@ export function GameBoard({ bots }: { bots: number }) {
         </div>
 
         <section className="player-gauge">
-          <p className="flex items-center gap-2 font-display text-primary"><img src={avatarUrl(profile.avatar)} alt="" className="h-6 w-6 rounded-full object-cover" /><span className="truncate">{me.name}</span>{me.shielded && " ❄️"}</p>
+          <p className="text-front flex items-center gap-2 font-display text-primary"><img src={avatarUrl(profile.avatar)} alt="" className="h-6 w-6 rounded-full object-cover" /><span className="truncate">{me.name}</span>{me.shielded && " ❄️"}</p>
           <Gauge player={me} />
-          <p className="mt-2 text-[10px] text-muted-foreground">{me.hand.length} cartes · {myTurn ? `${s.playsLeft} coups` : "En attente"}</p>
+          <p className="text-front mt-2 text-[10px] text-muted-foreground">{me.hand.length} cartes · {myTurn ? `${s.playsLeft} coups` : "En attente"}</p>
         </section>
         <PlayerHand cards={me.hand} selected={sel} onSelect={open} />
         <div className="finish-turn">
           {timerOn && <div className="mb-1 flex justify-center"><span className={cn("turn-timer", left <= 10 && "turn-timer-low")} role="timer" aria-label={`${left} secondes restantes`}><Timer className="h-4 w-4" />{left}s</span></div>}
           <Button className="btn-slime h-auto w-full gap-2 px-2 py-3 text-xs whitespace-normal" disabled={!myTurn} onClick={() => act(() => endTurn(s, ME))}><ArrowDownToLine />Finir mon tour</Button>
-          <p className="mt-2 text-center text-[10px] text-muted-foreground">{s.giftGiven ? "Cadeau offert" : "Cadeau disponible"}</p>
+          <p className="text-front mt-2 text-center text-[10px] text-muted-foreground">{s.giftGiven ? "Cadeau offert" : "Cadeau disponible"}</p>
         </div>
 
         {card && (
