@@ -31,6 +31,10 @@ import { TutorialGuide } from "./TutorialGuide";
 import { cardLesson, INITIAL_TUTORIAL, TUTORIAL_KEY, tutorialStep, TUTORIAL_LESSONS } from "@/game/tutorial";
 import { GraduationCap } from "lucide-react";
 import { PlayerHand } from "./PlayerHand";
+import { useRef } from "react";
+import { addRecord, HISTORY_KEY, loadLocal, parseHistory, parseProfile, PROFILE_KEY, rankPlayers, saveLocal, TURN_SECONDS } from "@/game/profile";
+import { avatarUrl } from "./card-art";
+import { Timer } from "lucide-react";
 
 const BOT_NAMES = ["Gros Bulot", "Tata Yolande", "Momie Touthanpéku"];
 const ME = "p0";
@@ -38,9 +42,10 @@ const ME = "p0";
 export function GameBoard({ bots }: { bots: number }) {
   const { preferences, setGameActive, sound } = useGameSettings();
   useEffect(() => { setGameActive(true); return () => setGameActive(false); }, [setGameActive]);
+  const profile = useMemo(() => loadLocal(PROFILE_KEY, parseProfile), []);
   const newGame = () =>
     createGame([
-      { name: "Toi", isAI: false },
+      { name: profile.name, isAI: false },
       ...BOT_NAMES.slice(0, bots).map((name) => ({ name, isAI: true })),
     ]);
   const [s, setS] = useState<GameState | null>(null);
@@ -86,6 +91,38 @@ export function GameBoard({ bots }: { bots: number }) {
 
   const me = s?.players.find((p) => p.id === ME);
   const myTurn = !!s && s.players[s.current]?.id === ME && !s.pending && !s.winner;
+
+  // Track eliminations and last gauge values for the history
+  const elim = useRef<string[]>([]);
+  const gauges = useRef<Record<string, number>>({});
+  const saved = useRef<string | null>(null);
+  const gameId = useRef("");
+  useEffect(() => {
+    if (!s) return;
+    if (s.seq === 0 && s.log.length === 1) { elim.current = []; gauges.current = {}; gameId.current = `${Date.now()}`; }
+    for (const p of s.players) {
+      if (p.alive) gauges.current[p.id] = gaugeTotal(p);
+      else if (!elim.current.includes(p.id)) { elim.current.push(p.id); gauges.current[p.id] = Math.max(10, gauges.current[p.id] ?? 10); }
+    }
+    if (s.winner && saved.current !== gameId.current) {
+      saved.current = gameId.current;
+      const results = rankPlayers(s.players, s.winner, elim.current, gauges.current, ME);
+      saveLocal(HISTORY_KEY, addRecord(loadLocal(HISTORY_KEY, parseHistory), { id: gameId.current, date: new Date().toISOString(), won: s.winner === ME, turns: s.seq + 1, results }));
+    }
+  }, [s]);
+
+  // 60-second turn timer (paused during the tutorial)
+  const [left, setLeft] = useState(TURN_SECONDS);
+  const timerOn = myTurn && !guided;
+  useEffect(() => { setLeft(TURN_SECONDS); }, [s?.seq, s?.current]);
+  useEffect(() => {
+    if (!timerOn) return;
+    const id = setInterval(() => setLeft(l => Math.max(0, l - 1)), 1000);
+    return () => clearInterval(id);
+  }, [timerOn]);
+  useEffect(() => {
+    if (timerOn && left === 0 && s) { setSel(null); setS(endTurn(s, ME)); }
+  }, [left, timerOn]);
   const card = useMemo(() => me?.hand.find((c) => c.id === sel) ?? null, [me, sel]);
 
   if (!s || !me) return <div className="grid min-h-dvh place-items-center font-display text-2xl">Mélange…</div>;
@@ -180,11 +217,12 @@ export function GameBoard({ bots }: { bots: number }) {
         </div>
         <div className="turn-status" aria-live="polite">
           <strong>{myTurn ? "À toi de maudire !" : `${current?.name ?? ""} joue…`}</strong>
+          {timerOn && <span className={cn("turn-timer", left <= 10 && "turn-timer-low")} role="timer" aria-label={`${left} secondes restantes`}><Timer className="h-4 w-4" />{left}s</span>}
           <p>{s.log.at(-1)}</p>
         </div>
 
         <section className="player-gauge">
-          <p className="font-display text-primary">Ta Maudite Jauge{me.shielded && " ❄️"}</p>
+          <p className="flex items-center gap-2 font-display text-primary"><img src={avatarUrl(profile.avatar)} alt="" className="h-6 w-6 rounded-full object-cover" /><span className="truncate">{me.name}</span>{me.shielded && " ❄️"}</p>
           <Gauge player={me} />
           <p className="mt-2 text-[10px] text-muted-foreground">{me.hand.length} cartes · {myTurn ? `${s.playsLeft} coups` : "En attente"}</p>
         </section>
@@ -213,6 +251,7 @@ export function GameBoard({ bots }: { bots: number }) {
           <h2 className="font-display text-3xl text-primary">{winner.id === ME ? "Victoire !" : `${winner.name} gagne`}</h2>
           {guided && <><p className="text-sm">Le dernier survivant gagne. Tu connais maintenant les bases !</p><Button variant="outline" onClick={stopTutorial}>Terminer le tutoriel</Button></>}
           <Button className="btn-slime h-auto px-8 py-3" onClick={() => { setS(newGame()); setSel(null); }}>Rejouer</Button>
+          <Button variant="link" asChild className="text-accent"><Link to="/historique">Voir l'historique</Link></Button>
           <Link to="/" className="text-sm underline">Menu</Link>
         </div></div>}
       </div>
