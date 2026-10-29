@@ -196,13 +196,13 @@ function resolve(s: GameState, pend: Pending) {
     }
     log(s, `🦝 ${from.name} vole une carte à ${to.name}`);
   } else if (c.effect === "magichien") {
+    const top = s.discard.slice(-4).reverse();
+    const copy = top.find((x) => x.kind === "trick" && x.effect !== "magichien");
     s.discard.push(c);
-    const big = [...from.gauge].sort((a, b) => itemValue(b) - itemValue(a))[0];
-    if (!big) return log(s, `${c.name} : ${from.name} n'a rien à refiler`);
-    from.gauge = from.gauge.filter((g) => g !== big);
-    to.gauge.push(big);
-    log(s, `🐕 ${from.name} refile un cadeau de ${itemValue(big)} à ${to.name}`);
-    checkElim(s, to);
+    if (!copy) return log(s, `🐕 ${c.name} : aucune Fourberie à reproduire dans la Défausse Septique`);
+    log(s, `🐕 ${from.name} reproduit ${copy.name} sur ${to.name}`);
+    s.discard = s.discard.filter((x) => x !== copy);
+    resolve(s, { ...pend, card: copy });
   } else if (c.effect === "franken") {
     s.discard.push(c);
     if (to.hand.length) s.discard.push(to.hand.splice(Math.floor(Math.random() * to.hand.length), 1)[0]!);
@@ -213,11 +213,8 @@ function resolve(s: GameState, pend: Pending) {
     log(s, `💨 ${from.name} et ${to.name} échangent leurs mains`);
   } else if (c.effect === "deuil") {
     s.discard.push(c);
-    for (let k = 0; k < 2 && to.hand.length; k++) {
-      const i = Math.floor(Math.random() * to.hand.length);
-      s.discard.push(to.hand.splice(i, 1)[0]!);
-    }
-    log(s, `⚰️ ${to.name} défausse 2 cartes`);
+    if (to.hand.length) s.discard.push(to.hand.splice(Math.floor(Math.random() * to.hand.length), 1)[0]!);
+    log(s, `⚰️ Une carte de ${to.name} part dans la Défausse Septique`);
   }
 }
 
@@ -321,7 +318,8 @@ export function playTrick(st: GameState, pid: string, cardId: string, tid: strin
   if (!c || c.kind !== "trick") throw new GameError("Ce n'est pas une Fourberie");
   if (ATTACH_BONUS[c.effect!] && !P(s, tid).gauge.length)
     throw new GameError("Ce joueur n'a aucun cadeau dans sa jauge");
-  if (c.effect === "magichien" && !p.gauge.length) throw new GameError("Ta jauge est vide, rien à refiler");
+  if (c.effect === "magichien" && !s.discard.slice(-4).some((x) => x.kind === "trick" && x.effect !== "magichien"))
+    throw new GameError("Aucune Fourberie dans les 4 premières cartes de la Défausse Septique");
   take(p, cardId);
   s.playsLeft--;
   deliver(s, itemId ? { type: "trick", from: pid, to: tid, card: c, itemId } : { type: "trick", from: pid, to: tid, card: c });
