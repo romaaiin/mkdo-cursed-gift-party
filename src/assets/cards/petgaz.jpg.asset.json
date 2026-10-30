@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "asset_id": "bbad44f0-c983-42fb-b83e-240f325653f1",
+  "asset_id": "4d0ef72b-b6d5-4162-afe6-cdcfa9f74b57",
   "project_id": "5763079e-98e1-493f-b929-8a70d5f93f50",
-  "url": "/__l5e/assets-v1/bbad44f0-c983-42fb-b83e-240f325653f1/petgaz.jpg",
-  "r2_key": "a/v1/5763079e-98e1-493f-b929-8a70d5f93f50/bbad44f0-c983-42fb-b83e-240f325653f1/petgaz.jpg",
-  "original_filename": "petgaz.jpg",
-  "size": 24650,
+  "url": "/__l5e/assets-v1/4d0ef72b-b6d5-4162-afe6-cdcfa9f74b57/petgaz-v2.jpg",
+  "r2_key": "a/v1/5763079e-98e1-493f-b929-8a70d5f93f50/4d0ef72b-b6d5-4162-afe6-cdcfa9f74b57/petgaz-v2.jpg",
+  "original_filename": "petgaz-v2.jpg",
+  "size": 72503,
   "content_type": "image/jpeg",
-  "created_at": "2026-10-28T22:55:14Z"
+  "created_at": "2026-10-30T08:19:22Z"
 }
