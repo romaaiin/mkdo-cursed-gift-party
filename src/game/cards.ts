@@ -12,7 +12,13 @@ export type Effect =
   | "yeti"
   | "protection"
   | "cacarma"
-  | "tresor";
+  | "tresor"
+  | "leonard"
+  | "boules"
+  | "trollol"
+  | "aligathor"
+  | "plante"
+  | "tentacule";
 
 export interface Card {
   id: string;
@@ -24,10 +30,12 @@ export interface Card {
   effect?: Effect;
   riposte?: boolean;
   desc: string;
+  /** Carte du pack DLC (hors 63 cartes de base). */
+  dlc?: boolean;
 }
 
 /** Fourberies posées sur un Maudit Cadeau et leur bonus de points. */
-export const ATTACH_BONUS: Partial<Record<Effect, number>> = { secourge: 2, momie: 3, dramacula: 1 };
+export const ATTACH_BONUS: Partial<Record<Effect, number>> = { secourge: 2, momie: 3 };
 
 type Tpl = Omit<Card, "id">;
 
@@ -69,11 +77,11 @@ export function buildDeck(): Card[] {
 
   add(3, { kind: "trick", effect: "magichien", name: "Magichien d'Os", emoji: "🐕", desc: "Choisis une Fourberie dans les 4 premières cartes de la Défausse Septique. Reproduis immédiatement son pouvoir." });
   add(2, { kind: "trick", effect: "momie", name: "Momie Touthanpéku", emoji: "🧻", desc: "Pose-la sur un Maudit Cadeau d'un adversaire : +3 pts." });
-  add(3, { kind: "trick", effect: "vol", name: "Vol à l'arraché", emoji: "🦝", desc: "Vole une carte au hasard dans la main d'un adversaire." });
-  add(2, { kind: "trick", effect: "franken", name: "Frankenschlingue", emoji: "🧟", desc: "Un adversaire défausse 1 carte au hasard." });
+  add(3, { kind: "trick", effect: "vol", name: "Vol à l'arraché", emoji: "🦝", desc: "Défausse une carte de ta main pour piocher une carte dans la main d'un autre joueur." });
+  add(2, { kind: "trick", effect: "franken", name: "Frankenschlingue", emoji: "🧟", desc: "Échange les cartes de ta jauge avec celles d'un autre joueur." });
   add(2, { kind: "trick", effect: "secourge", name: "Au secourge", emoji: "🎃", desc: "Pose-la sur un Maudit Cadeau d'un adversaire : +2 pts." });
-  add(3, { kind: "trick", effect: "petgaz", name: "Petgaz à effet de serre", emoji: "💨", desc: "Échange ta main avec celle d'un adversaire." });
-  add(3, { kind: "trick", effect: "dramacula", name: "Dramacula", emoji: "🧛", desc: "Pose-la sur un Maudit Cadeau d'un adversaire : +1 pt." });
+  add(3, { kind: "trick", effect: "petgaz", name: "Petgaz à effet de serre", emoji: "💨", desc: "Si tu as 5 points ou plus dans ta jauge, pioche une carte dans la main d'un autre joueur." });
+  add(3, { kind: "trick", effect: "dramacula", name: "Dramacula", emoji: "🧛", desc: "Choisis un joueur, il pioche une carte et la révèle. Si c'est un Maudit Cadeau, il la met dans sa jauge, sinon il l'ajoute à sa main." });
   add(2, { kind: "trick", effect: "deuil", name: "Jour de deuil", emoji: "⚰️", desc: "Choisis une carte au hasard dans la main d'un autre joueur et mets-la dans la Défausse Septique." });
 
   add(2, { kind: "defense", effect: "sirene", name: "Sirène d'urgence", emoji: "🚨", desc: "Défausse le plus gros Maudit Cadeau de ta jauge." });
@@ -91,6 +99,19 @@ export function buildDeck(): Card[] {
     add(1, { kind: "useless", name, emoji, desc: "Cadeau Inutile. 2 = Maudit Cadeau 1 pt Inévitable. 3 = Cacarma." });
 
   return t.map((c, i) => ({ ...c, id: `c${i}` }));
+}
+
+/** Cartes DLC jouables (option « pack DLC » du lobby), 1 exemplaire chacune. */
+export function buildDlcDeck(): Card[] {
+  const t: Tpl[] = [
+    { kind: "trick", effect: "leonard", name: "Léonard de Vinslip", emoji: "🎨", desc: "Garde cette carte dans ta jauge. Les Maudits Cadeaux de 2 points de toutes les jauges valent désormais 3 points." },
+    { kind: "trick", effect: "boules", name: "T'as les boules", emoji: "🎄", desc: "Choisis un Maudit Cadeau dans ta jauge et déplace-le dans la jauge d'un autre joueur." },
+    { kind: "trick", effect: "trollol", name: "Trollol", emoji: "🧌", desc: "Échange ta main avec celle d'un autre joueur." },
+    { kind: "draw", effect: "aligathor", name: "Aligathor", emoji: "🐊", desc: "Garde cette carte dans ta jauge. À la fin de ton tour, pioche 2 cartes au lieu d'une." },
+    { kind: "trick", effect: "plante", name: "Plante Cradenivore", emoji: "🌱", desc: "Choisis un autre joueur : il pose tous les Maudits Cadeaux de sa main dans sa jauge." },
+    { kind: "trick", effect: "tentacule", name: "Va te faire tentaculer", emoji: "🐙", desc: "Si tu as 7 points ou plus dans ta jauge, pioche jusqu'à 2 cartes dans la main de chaque joueur." },
+  ];
+  return t.map((c, i) => ({ ...c, dlc: true, id: `d${i}` }));
 }
 
 export const KIND_LABEL: Record<Kind, string> = {
