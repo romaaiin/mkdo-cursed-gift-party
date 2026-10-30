@@ -21,6 +21,7 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const [bots, setBots] = useState(2);
+  const [dlc, setDlc] = useState(false);
   return (
     <main className="landscape-shell">
       <div className="game-stage lobby-stage">
@@ -47,7 +48,15 @@ function Index() {
             </Button>
           ))}
         </div>
-        <Button asChild className="btn-slime h-auto py-3 text-xl"><Link to="/jeu" search={{ bots }}><Play />Jouer en solo</Link></Button>
+        <Button
+          onClick={() => setDlc(!dlc)}
+          aria-pressed={dlc}
+          variant={dlc ? "default" : "outline"}
+          className="h-9 font-display text-sm"
+        >
+          Pack DLC : {dlc ? "activé" : "désactivé"}
+        </Button>
+        <Button asChild className="btn-slime h-auto py-3 text-xl"><Link to="/jeu" search={{ bots, dlc }}><Play />Jouer en solo</Link></Button>
         <Button disabled variant="secondary" className="h-auto py-2 text-sm">
           En ligne — bientôt
         </Button>
