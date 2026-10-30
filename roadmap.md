@@ -7,4 +7,4 @@
 - [x] Présenter les règles complètes en paysage avec les pouvoirs officiels et les différences de la version actuelle.
 - [x] Ajouter un tutoriel de première partie, des conseils contextuels et la possibilité de le relancer.
 - [x] Vérifier le parcours guidé et son affichage en paysage sur téléphone.- [x] Ajouter un minuteur de 60 s par tour, un historique des parties et un menu « Mon compte ».
-- [ ] Effets officiels jouables : Petgaz, Vol à l'arraché, Dramacula, Frankenschlingue (base) + Léonard de Vinslip, T'as les boules, Trollol, Aligathor, Plante Cradenivore, Va te faire tentaculer (option pack DLC), tests par effet
+- [x] Effets officiels jouables : Petgaz, Vol à l'arraché, Dramacula, Frankenschlingue (base) + Léonard de Vinslip, T'as les boules, Trollol, Aligathor, Plante Cradenivore, Va te faire tentaculer (option pack DLC), tests par effet
