@@ -39,7 +39,7 @@ export const ATTACH_BONUS: Partial<Record<Effect, number>> = { secourge: 2, momi
 
 type Tpl = Omit<Card, "id">;
 
-/** Jeu de base Maudits Cadeaux (63 cartes). */
+/** Jeu de base Maudits Cadeaux actuellement implémenté (60 cartes, sans Gracula). */
 export function buildDeck(): Card[] {
   const t: Tpl[] = [];
   const add = (n: number, c: Tpl) => {
