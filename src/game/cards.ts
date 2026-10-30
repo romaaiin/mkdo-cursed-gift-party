@@ -54,8 +54,7 @@ export function buildDeck(): Card[] {
       inevitable,
       desc: `Offre-le à un adversaire : +${value} dans sa Maudite Jauge.${inevitable ? " INÉVITABLE : aucune riposte possible." : ""}`,
     });
-  gift(1, 5, "🧸");
-  gift(1, 4, "🧀");
+  gift(2, 4, "🧀");
   gift(4, 3, "🪆");
   gift(5, 2, "🥧");
   gift(3, 1, "🧦");
@@ -78,11 +77,9 @@ export function buildDeck(): Card[] {
   add(3, { kind: "trick", effect: "magichien", name: "Magichien d'Os", emoji: "🐕", desc: "Choisis une Fourberie dans les 4 premières cartes de la Défausse Septique. Reproduis immédiatement son pouvoir." });
   add(2, { kind: "trick", effect: "momie", name: "Momie Touthanpéku", emoji: "🧻", desc: "Pose-la sur un Maudit Cadeau d'un adversaire : +3 pts." });
   add(3, { kind: "trick", effect: "vol", name: "Vol à l'arraché", emoji: "🦝", desc: "Défausse une carte de ta main pour piocher une carte dans la main d'un autre joueur." });
-  add(2, { kind: "trick", effect: "franken", name: "Frankenschlingue", emoji: "🧟", desc: "Échange les cartes de ta jauge avec celles d'un autre joueur." });
-  add(2, { kind: "trick", effect: "secourge", name: "Au secourge", emoji: "🎃", desc: "Pose-la sur un Maudit Cadeau d'un adversaire : +2 pts." });
   add(3, { kind: "trick", effect: "petgaz", name: "Petgaz à effet de serre", emoji: "💨", desc: "Si tu as 5 points ou plus dans ta jauge, pioche une carte dans la main d'un autre joueur." });
   add(3, { kind: "trick", effect: "dramacula", name: "Dramacula", emoji: "🧛", desc: "Choisis un joueur, il pioche une carte et la révèle. Si c'est un Maudit Cadeau, il la met dans sa jauge, sinon il l'ajoute à sa main." });
-  add(2, { kind: "trick", effect: "deuil", name: "Jour de deuil", emoji: "⚰️", desc: "Choisis une carte au hasard dans la main d'un autre joueur et mets-la dans la Défausse Septique." });
+  add(3, { kind: "trick", effect: "deuil", name: "Jour de deuil", emoji: "⚰️", desc: "Choisis une carte au hasard dans la main d'un autre joueur et mets-la dans la Défausse Septique." });
 
   add(2, { kind: "defense", effect: "sirene", name: "Sirène d'urgence", emoji: "🚨", desc: "Défausse le plus gros Maudit Cadeau de ta jauge." });
   add(3, { kind: "defense", effect: "protection", riposte: true, name: "Protection de la Raie", emoji: "🐟", desc: "RIPOSTE : te protège d'une Fourberie ou d'un Maudit Cadeau que l'on t'offre." });
