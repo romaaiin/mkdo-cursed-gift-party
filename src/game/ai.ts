@@ -73,8 +73,29 @@ export function aiStep(s: GameState): GameState {
       const r = tryDo(() => playTrick(s, me.id, sec.id, withGauge.id, it.id));
       if (r) return r;
     }
+    const keep = me.hand.find((c) => c.effect === "aligathor");
+    if (keep) {
+      const r = tryDo(() => playDraw(s, me.id, keep.id));
+      if (r) return r;
+    }
+    const leo = me.hand.find((c) => c.effect === "leonard");
+    if (leo && foes[0] && foes.some((f) => f.gauge.some((it) => it.baseValue === 2)) && gaugeTotal(me) <= 5) {
+      const r = tryDo(() => playTrick(s, me.id, leo.id, foes[0]!.id));
+      if (r) return r;
+    }
+    const lowest = [...foes].sort((a, b) => gaugeTotal(a) - gaugeTotal(b))[0];
+    const fr = me.hand.find((c) => c.effect === "franken");
+    if (fr && lowest && gaugeTotal(me) > gaugeTotal(lowest) + 2) {
+      const r = tryDo(() => playTrick(s, me.id, fr.id, lowest.id));
+      if (r) return r;
+    }
+    const bo = me.hand.find((c) => c.effect === "boules");
+    if (bo && me.gauge.length && weakestGiftable) {
+      const r = tryDo(() => playTrick(s, me.id, bo.id, weakestGiftable.id));
+      if (r) return r;
+    }
     const richest = [...foes].sort((a, b) => b.hand.length - a.hand.length)[0];
-    const steal = me.hand.find((c) => c.effect === "vol" || c.effect === "deuil" || c.effect === "franken" || (c.effect === "petgaz" && me.hand.length < 4));
+    const steal = me.hand.find((c) => c.effect === "vol" || c.effect === "deuil" || c.effect === "petgaz" || c.effect === "tentacule" || c.effect === "plante" || c.effect === "dramacula" || (c.effect === "trollol" && me.hand.length < 4));
     if (steal && richest && richest.hand.length) {
       const r = tryDo(() => playTrick(s, me.id, steal.id, richest.id));
       if (r) return r;

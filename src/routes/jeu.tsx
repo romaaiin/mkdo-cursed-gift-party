@@ -4,6 +4,7 @@ import { GameBoard } from "@/components/game/GameBoard";
 export const Route = createFileRoute("/jeu")({
   validateSearch: (s: Record<string, unknown>) => ({
     bots: Math.min(3, Math.max(1, Number(s["bots"]) || 2)),
+    dlc: s["dlc"] === true || s["dlc"] === "true" || s["dlc"] === 1 || s["dlc"] === "1",
   }),
   head: () => ({
     meta: [
@@ -19,6 +20,6 @@ export const Route = createFileRoute("/jeu")({
 });
 
 function JeuPage() {
-  const { bots } = Route.useSearch();
-  return <GameBoard bots={bots} />;
+  const { bots, dlc } = Route.useSearch();
+  return <GameBoard bots={bots} dlc={dlc} />;
 }

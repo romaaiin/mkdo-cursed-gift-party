@@ -23,7 +23,7 @@ export function cardLesson(card: Card, s: GameState): string {
   if (card.riposte) return "Garde cette défense en main. Quand une attaque te vise, tu pourras choisir de riposter, même pendant le tour adverse et sans utiliser tes coups.";
   if (card.kind === "useless") return "Seul, ce cadeau ne se joue pas. Deux Inutiles font un cadeau de 1 point Inévitable (2 coups) ; trois permettent de riposter comme un Cacarma.";
   if (card.kind === "draw") return "Cette Pioche spéciale se joue uniquement en premier. Dans le solo actuel, elle fait piocher 3 cartes et termine ton tour ; la carte officielle indique 2 cartes.";
-  if (card.kind === "trick") return "Lis le pouvoir appliqué dans cette version, puis choisis un adversaire. Cette Fourberie coûte un coup et peut provoquer une Riposte. Certains pouvoirs restent provisoires : les différences figurent dans les règles.";
+  if (card.kind === "trick") return "Lis le pouvoir appliqué dans cette version, puis choisis un adversaire. Cette Fourberie coûte un coup et peut provoquer une Riposte. Quelques pouvoirs restent provisoires : les différences figurent dans les règles.";
   return "Cette Défense se joue pendant ton tour et coûte un coup. Lis son pouvoir, puis joue-la si elle est utile ; sinon, garde-la pour plus tard.";
 }
 

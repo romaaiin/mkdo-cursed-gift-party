@@ -39,7 +39,7 @@ import { Timer } from "lucide-react";
 import { pickBotNames } from "@/game/bot-names";
 const ME = "p0";
 
-export function GameBoard({ bots }: { bots: number }) {
+export function GameBoard({ bots, dlc = false }: { bots: number; dlc?: boolean }) {
   const { preferences, setGameActive, sound } = useGameSettings();
   useEffect(() => { setGameActive(true); return () => setGameActive(false); }, [setGameActive]);
   const profile = useMemo(() => loadLocal(PROFILE_KEY, parseProfile), []);
@@ -47,7 +47,7 @@ export function GameBoard({ bots }: { bots: number }) {
     createGame([
       { name: profile.name, isAI: false },
       ...pickBotNames(bots).map((name) => ({ name, isAI: true })),
-    ]);
+    ], { dlc });
   const [s, setS] = useState<GameState | null>(null);
   const [sel, setSel] = useState<string | null>(null);
   const [cureA, setCureA] = useState<string[]>([]);
@@ -300,6 +300,18 @@ function ActionPanel({
         <Targets gift onPick={(t) => act(() => playUselessCombo(s, ME, [card.id, useless.find((u) => u.id !== card.id)?.id ?? ""], t))} />
       </>
     ) : <p>Inutile seul… Garde-en 2 pour un combo, ou 3 pour un Cacarma.</p>;
+  else if (card.effect === "leonard")
+    body = (
+      <Button className="btn-slime px-6 py-2" onClick={() => act(() => playTrick(s, ME, card.id, s.players.find((p) => p.id !== ME && p.alive)!.id))}>
+        Poser dans ma jauge
+      </Button>
+    );
+  else if (card.effect === "tentacule")
+    body = (
+      <Button className="btn-slime px-6 py-2" onClick={() => act(() => playTrick(s, ME, card.id, s.players.find((p) => p.id !== ME && p.alive)!.id))}>
+        Piocher chez tout le monde
+      </Button>
+    );
   else if (card.kind === "trick")
     body = <><p>Cibler :</p><Targets onPick={(t) => act(() => playTrick(s, ME, card.id, t))} /></>;
   else if (card.kind === "draw" || card.effect === "sirene" || card.effect === "yeti")

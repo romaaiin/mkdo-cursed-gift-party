@@ -9,6 +9,7 @@ import {
   playUselessCombo,
   playSirene,
   playTrick,
+  playDraw,
   respond,
   type GameState,
 } from "./engine";
@@ -153,3 +154,124 @@ describe("Maudits Cadeaux rules", () => {
     expect(() => playTrick(r, "p1", "v", "p0")).not.toThrow();
   });
 });
+
+describe("effets officiels des Fourberies", () => {
+  const giftItem = (v: number) => ({ id: `i${n++}`, base: [gift(v)], extras: [], baseValue: v });
+  const play = (s: GameState, c: Card, itemId?: string) => {
+    let r = playTrick(s, "p0", c.id, "p1", itemId);
+    if (r.pending) r = respond(r, "p1", null);
+    return r;
+  };
+
+  it("Vol à l'arraché : défausse 1 carte de sa main et en pioche 1 chez la cible", () => {
+    const v = trick("vol"), junk = useless(), loot = gift(3);
+    const r = play(setup([v, junk], [loot]), v, junk.id);
+    expect(r.players[0]!.hand.map((c) => c.id)).toEqual([loot.id]);
+    expect(r.discard.map((c) => c.id)).toContain(junk.id);
+  });
+
+  it("Petgaz : refusé sous 5 points, vole 1 carte à partir de 5", () => {
+    const p = trick("petgaz"), loot = gift(1);
+    const low = setup([p], [loot]);
+    expect(() => playTrick(low, "p0", p.id, "p1")).toThrow();
+    const s = setup([p], [loot]);
+    s.players[0]!.gauge = [giftItem(5)];
+    const r = play(s, p);
+    expect(r.players[0]!.hand.map((c) => c.id)).toEqual([loot.id]);
+    expect(r.players[1]!.hand).toHaveLength(0);
+  });
+
+  it("Dramacula : un Maudit Cadeau pioché va dans la jauge de la cible", () => {
+    const d = trick("dramacula"), g = gift(2);
+    const s = setup([d], []);
+    s.deck = [g];
+    const r = play(s, d);
+    expect(gaugeTotal(r.players[1]!)).toBe(2);
+    expect(r.players[1]!.hand).toHaveLength(0);
+  });
+
+  it("Dramacula : une autre carte piochée reste dans la main de la cible", () => {
+    const d = trick("dramacula"), a = anti(1);
+    const s = setup([d], []);
+    s.deck = [a];
+    const r = play(s, d);
+    expect(r.players[1]!.hand.map((c) => c.id)).toEqual([a.id]);
+    expect(gaugeTotal(r.players[1]!)).toBe(0);
+  });
+
+  it("Frankenschlingue : échange les jauges", () => {
+    const f = trick("franken");
+    const s = setup([f], []);
+    s.players[0]!.gauge = [giftItem(4)];
+    s.players[1]!.gauge = [giftItem(1)];
+    const r = play(s, f);
+    expect(gaugeTotal(r.players[0]!)).toBe(1);
+    expect(gaugeTotal(r.players[1]!)).toBe(4);
+  });
+
+  it("Trollol : échange les mains", () => {
+    const t = trick("trollol"), mine = gift(1), theirs = anti(2);
+    const r = play(setup([t, mine], [theirs]), t);
+    expect(r.players[0]!.hand.map((c) => c.id)).toEqual([theirs.id]);
+    expect(r.players[1]!.hand.map((c) => c.id)).toEqual([mine.id]);
+  });
+
+  it("T'as les boules : déplace un cadeau de sa jauge vers la cible", () => {
+    const b = trick("boules");
+    const s = setup([b], []);
+    const it = giftItem(3);
+    s.players[0]!.gauge = [it];
+    const r = play(s, b, it.id);
+    expect(gaugeTotal(r.players[0]!)).toBe(0);
+    expect(gaugeTotal(r.players[1]!)).toBe(3);
+  });
+
+  it("Plante Cradenivore : la cible pose tous ses Maudits Cadeaux en jauge", () => {
+    const p = trick("plante"), a = anti(1);
+    const r = play(setup([p], [gift(2), gift(1), a]), p);
+    expect(gaugeTotal(r.players[1]!)).toBe(3);
+    expect(r.players[1]!.hand.map((c) => c.id)).toEqual([a.id]);
+  });
+
+  it("Va te faire tentaculer : 7 pts requis, pioche jusqu'à 2 cartes chez chaque joueur", () => {
+    const t = trick("tentacule");
+    const s = setup([t], [gift(1), gift(1), gift(1)], 3);
+    s.players[2]!.hand = [anti(1)];
+    expect(() => playTrick(s, "p0", t.id, "p1")).toThrow();
+    s.players[0]!.gauge = [giftItem(7)];
+    const r = play(s, t);
+    expect(r.players[0]!.hand).toHaveLength(3);
+    expect(r.players[1]!.hand).toHaveLength(1);
+    expect(r.players[2]!.hand).toHaveLength(0);
+  });
+
+  it("Léonard de Vinslip : reste en jauge et les cadeaux de 2 pts valent 3", () => {
+    const l = trick("leonard");
+    const s = setup([l, gift(2)], []);
+    s.players[1]!.gauge = [giftItem(2), giftItem(1)];
+    const r = playTrick(s, "p0", l.id, "p1");
+    expect(r.players[0]!.kept.map((c) => c.id)).toEqual([l.id]);
+    expect(gaugeTotal(r.players[1]!)).toBe(4);
+    const g2 = r.players[0]!.hand[0]!;
+    const r2 = respondIfNeeded(playGift(r, "p0", g2.id, "p1"));
+    expect(gaugeTotal(r2.players[1]!)).toBe(7);
+  });
+
+  it("Aligathor : reste en jauge et fait piocher 2 cartes en fin de tour", () => {
+    const a: Card = { id: `t${n++}`, kind: "draw", effect: "aligathor", name: "Aligathor", emoji: "", desc: "" };
+    const s = setup([a], []);
+    s.deck = [gift(1), gift(1), gift(1)];
+    const r = endTurn(playDraw(s, "p0", a.id), "p0");
+    expect(r.players[0]!.kept).toHaveLength(1);
+    expect(r.players[0]!.hand).toHaveLength(2);
+  });
+
+  it("le pack DLC n'est ajouté que sur demande", () => {
+    expect(createGame([{ name: "a", isAI: false }, { name: "b", isAI: true }]).deck.length + 14).toBe(63);
+    expect(createGame([{ name: "a", isAI: false }, { name: "b", isAI: true }], { dlc: true }).deck.length + 14).toBe(69);
+  });
+});
+
+function respondIfNeeded(s: GameState) {
+  return s.pending ? respond(s, s.pending.to, null) : s;
+}

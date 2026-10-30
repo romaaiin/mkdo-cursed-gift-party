@@ -1,4 +1,4 @@
-import { ATTACH_BONUS, buildDeck, type Card } from "./cards";
+import { ATTACH_BONUS, buildDeck, buildDlcDeck, type Card } from "./cards";
 
 export const MAX_GAUGE = 10;
 export const MAX_PLAYS = 3;
@@ -19,6 +19,8 @@ export interface Player {
   gauge: GaugeItem[];
   alive: boolean;
   shielded: boolean;
+  /** Cartes posées et conservées dans la jauge (Léonard, Aligathor) : 0 point. */
+  kept: Card[];
 }
 
 export type Pending =
@@ -58,8 +60,8 @@ export function gaugeTotal(p: Player) {
   return p.gauge.reduce((s, it) => s + itemValue(it), 0);
 }
 
-export function createGame(seats: { name: string; isAI: boolean }[]): GameState {
-  const deck = shuffle(buildDeck());
+export function createGame(seats: { name: string; isAI: boolean }[], opts: { dlc?: boolean } = {}): GameState {
+  const deck = shuffle([...buildDeck(), ...(opts.dlc ? buildDlcDeck() : [])]);
   const players = seats.map((s, i) => ({
     id: `p${i}`,
     name: s.name,
@@ -68,6 +70,7 @@ export function createGame(seats: { name: string; isAI: boolean }[]): GameState 
     gauge: [],
     alive: true,
     shielded: false,
+    kept: [] as Card[],
   }));
   return {
     players,
@@ -138,9 +141,11 @@ export function riposteOptions(s: GameState, pid: string): RiposteChoice[] {
 function checkElim(s: GameState, p: Player) {
   if (!p.alive || gaugeTotal(p) < MAX_GAUGE) return;
   p.alive = false;
-  const back = [...p.hand, ...p.gauge.flatMap((g) => [...g.base, ...g.extras])];
+  const back = [...p.hand, ...p.kept, ...p.gauge.flatMap((g) => [...g.base, ...g.extras])];
   p.hand = [];
   p.gauge = [];
+  p.kept = [];
+  syncLeonard(s);
   s.deck = shuffle([...s.deck, ...back]);
   log(s, `💀 ${p.name} est éliminé(e) ! Ses cartes retournent dans la pioche.`);
   const alive = s.players.filter((x) => x.alive);
@@ -148,6 +153,29 @@ function checkElim(s: GameState, p: Player) {
     s.winner = alive[0]!.id;
     log(s, `🏆 ${alive[0]!.name} remporte la partie !`);
   }
+}
+
+/** Léonard de Vinslip : tant qu'il est dans une jauge, les Maudits Cadeaux de 2 pts valent 3 pts. */
+export function leonardActive(s: GameState) {
+  return s.players.some((p) => p.alive && (p.kept ?? []).some((c) => c.effect === "leonard"));
+}
+function adjust(s: GameState, it: GaugeItem) {
+  const c = it.base[0];
+  if (it.base.length === 1 && c?.kind === "gift" && c.value === 2) it.baseValue = leonardActive(s) ? 3 : 2;
+}
+function syncLeonard(s: GameState) {
+  s.players.forEach((p) => p.gauge.forEach((it) => adjust(s, it)));
+}
+function addGift(s: GameState, p: Player, c: Card) {
+  const it = newItem([c], c.value!);
+  adjust(s, it);
+  p.gauge.push(it);
+}
+const rnd = <T,>(a: T[]) => a.splice(Math.floor(Math.random() * a.length), 1)[0]!;
+
+/** Carte la moins précieuse à défausser (Vol à l'arraché). */
+function keepScore(c: Card) {
+  return c.kind === "useless" ? 0 : c.kind === "gift" ? 1 + (c.value ?? 0) : c.kind === "antidote" ? 5 : 8;
 }
 
 function deliver(s: GameState, pend: Pending) {
@@ -169,6 +197,7 @@ function resolve(s: GameState, pend: Pending) {
   const from = P(s, pend.from);
   const to = P(s, pend.to);
   if (pend.type === "gift") {
+    adjust(s, pend.item);
     to.gauge.push(pend.item);
     log(s, `🎁 ${from.name} offre ${pend.item.base[0]!.name} (${itemValue(pend.item)}) à ${to.name}`);
     checkElim(s, to);
@@ -190,11 +219,12 @@ function resolve(s: GameState, pend: Pending) {
     checkElim(s, to);
   } else if (c.effect === "vol") {
     s.discard.push(c);
-    if (to.hand.length) {
-      const i = Math.floor(Math.random() * to.hand.length);
-      from.hand.push(to.hand.splice(i, 1)[0]!);
-    }
-    log(s, `🦝 ${from.name} vole une carte à ${to.name}`);
+    const own = from.hand.find((x) => x.id === pend.itemId) ?? [...from.hand].sort((x, y) => keepScore(x) - keepScore(y))[0];
+    if (!own) return log(s, `🦝 ${from.name} n'a aucune carte à défausser`);
+    from.hand = from.hand.filter((x) => x !== own);
+    s.discard.push(own);
+    if (to.hand.length) from.hand.push(rnd(to.hand));
+    log(s, `🦝 ${from.name} défausse une carte et en pioche une chez ${to.name}`);
   } else if (c.effect === "magichien") {
     const top = s.discard.slice(-4).reverse();
     const copy = top.find((x) => x.kind === "trick" && x.effect !== "magichien");
@@ -205,12 +235,55 @@ function resolve(s: GameState, pend: Pending) {
     resolve(s, { ...pend, card: copy });
   } else if (c.effect === "franken") {
     s.discard.push(c);
-    if (to.hand.length) s.discard.push(to.hand.splice(Math.floor(Math.random() * to.hand.length), 1)[0]!);
-    log(s, `🧟 ${to.name} défausse 1 carte`);
+    [from.gauge, to.gauge] = [to.gauge, from.gauge];
+    log(s, `🧟 ${from.name} et ${to.name} échangent leurs jauges`);
+    checkElim(s, from);
+    if (!s.winner) checkElim(s, to);
   } else if (c.effect === "petgaz") {
     s.discard.push(c);
+    if (to.hand.length) from.hand.push(rnd(to.hand));
+    log(s, `💨 ${from.name} pioche une carte dans la main de ${to.name}`);
+  } else if (c.effect === "trollol") {
+    s.discard.push(c);
     [from.hand, to.hand] = [to.hand, from.hand];
-    log(s, `💨 ${from.name} et ${to.name} échangent leurs mains`);
+    log(s, `🧌 ${from.name} et ${to.name} échangent leurs mains`);
+  } else if (c.effect === "dramacula") {
+    s.discard.push(c);
+    const before = to.hand.length;
+    draw(s, to, 1);
+    if (to.hand.length > before) {
+      const d = to.hand.pop()!;
+      if (d.kind === "gift") {
+        addGift(s, to, d);
+        log(s, `🧛 ${to.name} révèle ${d.name} : direction la jauge !`);
+        checkElim(s, to);
+      } else {
+        to.hand.push(d);
+        log(s, `🧛 ${to.name} révèle ${d.name} et la garde en main`);
+      }
+    }
+  } else if (c.effect === "boules") {
+    s.discard.push(c);
+    const it = from.gauge.find((g) => g.id === pend.itemId) ?? [...from.gauge].sort((x, y) => itemValue(y) - itemValue(x))[0];
+    if (!it) return log(s, `🎄 ${from.name} n'a aucun cadeau à déplacer`);
+    from.gauge = from.gauge.filter((g) => g !== it);
+    to.gauge.push(it);
+    log(s, `🎄 ${from.name} déplace un cadeau de ${itemValue(it)} chez ${to.name}`);
+    checkElim(s, to);
+  } else if (c.effect === "plante") {
+    s.discard.push(c);
+    const gifts = to.hand.filter((x) => x.kind === "gift");
+    to.hand = to.hand.filter((x) => x.kind !== "gift");
+    gifts.forEach((g) => addGift(s, to, g));
+    log(s, `🌱 ${to.name} pose ${gifts.length} Maudit${gifts.length > 1 ? "s" : ""} Cadeau${gifts.length > 1 ? "x" : ""} dans sa jauge`);
+    checkElim(s, to);
+  } else if (c.effect === "tentacule") {
+    s.discard.push(c);
+    for (const o of s.players) {
+      if (o === from || !o.alive) continue;
+      for (let k = 0; k < 2 && o.hand.length; k++) from.hand.push(rnd(o.hand));
+    }
+    log(s, `🐙 ${from.name} pioche jusqu'à 2 cartes dans la main de chaque joueur`);
   } else if (c.effect === "deuil") {
     s.discard.push(c);
     if (to.hand.length) s.discard.push(to.hand.splice(Math.floor(Math.random() * to.hand.length), 1)[0]!);
@@ -226,7 +299,7 @@ function afterAction(s: GameState) {
 
 function advance(s: GameState, drawCard: boolean) {
   const cur = s.players[s.current]!;
-  if (drawCard && cur.alive) draw(s, cur, 1);
+  if (drawCard && cur.alive) draw(s, cur, (cur.kept ?? []).some((c) => c.effect === "aligathor") ? 2 : 1);
   if (s.winner) return;
   let n = s.current;
   do n = (n + 1) % s.players.length;
@@ -318,6 +391,21 @@ export function playTrick(st: GameState, pid: string, cardId: string, tid: strin
   if (!c || c.kind !== "trick") throw new GameError("Ce n'est pas une Fourberie");
   if (ATTACH_BONUS[c.effect!] && !P(s, tid).gauge.length)
     throw new GameError("Ce joueur n'a aucun cadeau dans sa jauge");
+  if (c.effect === "leonard") {
+    take(p, cardId);
+    p.kept.push(c);
+    s.playsLeft--;
+    syncLeonard(s);
+    log(s, `🎨 ${p.name} pose Léonard de Vinslip : les cadeaux de 2 pts valent 3 pts !`);
+    s.players.forEach((x) => x.alive && checkElim(s, x));
+    afterAction(s);
+    return s;
+  }
+  const mine = gaugeTotal(p);
+  if (c.effect === "petgaz" && mine < 5) throw new GameError("Il faut 5 points ou plus dans ta jauge");
+  if (c.effect === "tentacule" && mine < 7) throw new GameError("Il faut 7 points ou plus dans ta jauge");
+  if (c.effect === "boules" && !p.gauge.length) throw new GameError("Ta jauge est vide, rien à déplacer");
+  if (c.effect === "vol" && p.hand.length < 2) throw new GameError("Il te faut une autre carte à défausser");
   if (c.effect === "magichien" && !s.discard.slice(-4).some((x) => x.kind === "trick" && x.effect !== "magichien"))
     throw new GameError("Aucune Fourberie dans les 4 premières cartes de la Défausse Septique");
   take(p, cardId);
@@ -360,6 +448,12 @@ export function playDraw(st: GameState, pid: string, cardId: string) {
   if (c.effect === "tresor" && s.playsLeft !== MAX_PLAYS)
     throw new GameError("Le Faculeux trésor se joue en tout premier");
   take(p, cardId);
+  if (c.effect === "aligathor") {
+    p.kept.push(c);
+    s.playsLeft--;
+    log(s, `🐊 ${p.name} garde l'Aligathor : il piochera 2 cartes en fin de tour`);
+    return s;
+  }
   s.discard.push(c);
   if (c.effect === "tresor") {
     draw(s, p, 3);
