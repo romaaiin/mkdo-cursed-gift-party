@@ -56,7 +56,7 @@ revoke all on public.mkdo_game_states from anon, authenticated;
 
 create or replace function public.mkdo_is_room_member(p_room_id uuid, p_user_id uuid)
 returns boolean language sql stable security definer set search_path = public
-as $ select exists(select 1 from public.mkdo_room_members m where m.room_id = p_room_id and m.user_id = p_user_id) $;
+as $function$ select exists(select 1 from public.mkdo_room_members m where m.room_id = p_room_id and m.user_id = p_user_id) $function$;
 
 alter table public.mkdo_profiles enable row level security;
 alter table public.mkdo_rooms enable row level security;
@@ -128,7 +128,7 @@ begin
   if exists(select 1 from public.mkdo_room_members where room_id = v_room.id and user_id = auth.uid()) then
     return v_room.id;
   end if;
-  select seat into v_seat from generate_series(0, v_room.max_players - 1) as seats(seat_no)
+  select seats.seat_no into v_seat from generate_series(0, v_room.max_players - 1) as seats(seat_no)
     where not exists(select 1 from public.mkdo_room_members m where m.room_id = v_room.id and m.seat = seats.seat_no)
     order by seats.seat_no limit 1;
   if v_seat is null then raise exception 'room_full'; end if;
@@ -161,7 +161,7 @@ begin
       and r.max_players = p_max_players and r.expires_at > now()
       and (select count(*) from public.mkdo_room_members m where m.room_id = r.id) < r.max_players
     order by r.created_at
-    for update skip locked limit 1;
+    limit 1 for update skip locked;
   if found then
     select seat into v_seat from generate_series(0, v_room.max_players - 1) as seats(seat_no)
       where not exists(select 1 from public.mkdo_room_members m where m.room_id = v_room.id and m.seat = seats.seat_no)
