@@ -336,7 +336,10 @@ export function playGift(st: GameState, pid: string, cardId: string, tid: string
   take(p, cardId);
   s.playsLeft--;
   s.giftGiven = true;
-  deliver(s, { type: "gift", from: pid, to: tid, item: newItem([c], c.value!), inevitable: !!c.inevitable });
+  const item = newItem([c], c.value!);
+  item.extras.push(...(p.gracula ?? []));
+  p.gracula = [];
+  deliver(s, { type: "gift", from: pid, to: tid, item, inevitable: !!c.inevitable });
   afterAction(s);
   return s;
 }
