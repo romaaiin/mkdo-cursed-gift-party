@@ -17,7 +17,7 @@ declare global {
   }
 }
 
-const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined;
+const TURNSTILE_SITE_KEY = import.meta.env["VITE_TURNSTILE_SITE_KEY"] as string | undefined;
 
 function TurnstileBox({ onToken, resetKey }: { onToken: (token: string | null) => void; resetKey: number }) {
   const container = useRef<HTMLDivElement>(null);
