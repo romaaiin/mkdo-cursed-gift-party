@@ -22,7 +22,6 @@ create table public.mkdo_rooms (
   host_id uuid not null references auth.users(id),
   max_players smallint not null default 4 check (max_players between 2 and 4),
   dlc_enabled boolean not null default false,
-  game_state jsonb,
   state_version bigint not null default 0,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
@@ -44,6 +43,16 @@ create table public.mkdo_room_members (
   unique (room_id, seat)
 );
 create index mkdo_room_members_user_idx on public.mkdo_room_members(user_id);
+
+-- Private state is isolated from all client-readable room metadata.
+create table public.mkdo_game_states (
+  room_id uuid primary key references public.mkdo_rooms(id) on delete cascade,
+  state jsonb not null,
+  version bigint not null default 0,
+  updated_at timestamptz not null default now()
+);
+alter table public.mkdo_game_states enable row level security;
+revoke all on public.mkdo_game_states from anon, authenticated;
 
 create or replace function public.mkdo_is_room_member(p_room_id uuid, p_user_id uuid)
 returns boolean language sql stable security definer set search_path = public
@@ -67,9 +76,6 @@ create policy "members can read room roster" on public.mkdo_room_members
   for select to authenticated using (
     public.mkdo_is_room_member(room_id, auth.uid())
   );
-
--- Never expose the complete game state (it contains private hands) to clients. Edge Functions use service_role.
-revoke select (game_state) on public.mkdo_rooms from anon, authenticated;
 
 -- No direct client INSERT/UPDATE/DELETE policies are intentionally provided.
 -- All room lifecycle and game-state mutations must go through trusted Edge Functions.
@@ -122,9 +128,9 @@ begin
   if exists(select 1 from public.mkdo_room_members where room_id = v_room.id and user_id = auth.uid()) then
     return v_room.id;
   end if;
-  select seat into v_seat from generate_series(0, v_room.max_players - 1) seat
-    where not exists(select 1 from public.mkdo_room_members m where m.room_id = v_room.id and m.seat = seat)
-    order by seat limit 1;
+  select seat into v_seat from generate_series(0, v_room.max_players - 1) as seats(seat_no)
+    where not exists(select 1 from public.mkdo_room_members m where m.room_id = v_room.id and m.seat = seats.seat_no)
+    order by seats.seat_no limit 1;
   if v_seat is null then raise exception 'room_full'; end if;
   insert into public.mkdo_room_members(room_id, user_id, nickname, avatar, seat)
   values(v_room.id, auth.uid(), trim(p_nickname), coalesce(nullif(p_avatar, ''), 'default'), v_seat);
@@ -157,9 +163,9 @@ begin
     order by r.created_at
     for update skip locked limit 1;
   if found then
-    select seat into v_seat from generate_series(0, v_room.max_players - 1) seat
-      where not exists(select 1 from public.mkdo_room_members m where m.room_id = v_room.id and m.seat = seat)
-      order by seat limit 1;
+    select seat into v_seat from generate_series(0, v_room.max_players - 1) as seats(seat_no)
+      where not exists(select 1 from public.mkdo_room_members m where m.room_id = v_room.id and m.seat = seats.seat_no)
+      order by seats.seat_no limit 1;
     if v_seat is null then raise exception 'room_full'; end if;
     insert into public.mkdo_room_members(room_id, user_id, nickname, avatar, seat)
     values(v_room.id, auth.uid(), trim(p_nickname), coalesce(nullif(p_avatar, ''), 'default'), v_seat);
