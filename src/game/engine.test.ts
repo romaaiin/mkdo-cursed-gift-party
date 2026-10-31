@@ -165,6 +165,7 @@ describe("Maudits Cadeaux rules", () => {
     const offered = playGift(staged, "p0", present.id, "p1");
     const item = offered.players[1]!.gauge[0]!;
     expect(itemValue(item)).toBe(3);
+    offered.current = 1;
     const cured = playAntidotes(offered, "p1", [antidote.id], [item.id]);
     expect(gaugeTotal(cured.players[1]!)).toBe(0);
   });
