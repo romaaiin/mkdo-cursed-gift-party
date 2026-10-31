@@ -55,6 +55,11 @@ export function aiStep(s: GameState): GameState {
       if (t) return playDraw(s, me.id, t.id);
     }
     if (!s.giftGiven && weakestGiftable) {
+      const gracula = me.hand.find((c) => c.effect === "gracula");
+      if (gracula && s.playsLeft > 1) {
+        const r = tryDo(() => playTrick(s, me.id, gracula.id, me.id));
+        if (r) return r;
+      }
       const gifts = me.hand.filter((c) => c.kind === "gift").sort((a, b) => b.value! - a.value!);
       if (gifts.length) {
         const r = tryDo(() => playGift(s, me.id, gifts[0]!.id, weakestGiftable.id));
