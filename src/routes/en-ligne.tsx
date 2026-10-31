@@ -10,7 +10,7 @@ import { isOnlineConfigured, loadOnlineSession, roomApi, saveOnlineSession, sign
 declare global {
   interface Window {
     turnstile?: {
-      render: (container: HTMLElement, options: { sitekey: string; callback: (token: string) => void; "expired-callback"?: () => void; "error-callback"?: () => void; theme?: "light" | "dark" | "auto" }) => string;
+      render: (container: HTMLElement, options: { sitekey: string; callback: (token: string) => void; "expired-callback"?: () => void; "error-callback"?: (code?: string) => boolean | void; theme?: "light" | "dark" | "auto" }) => string;
       reset: (widgetId?: string) => void;
       remove: (widgetId: string) => void;
     };
@@ -21,6 +21,7 @@ const TURNSTILE_SITE_KEY = import.meta.env["VITE_TURNSTILE_SITE_KEY"] as string 
 
 function TurnstileBox({ onToken, resetKey }: { onToken: (token: string | null) => void; resetKey: number }) {
   const container = useRef<HTMLDivElement>(null);
+  const [errorCode, setErrorCode] = useState<string | null>(null);
   useEffect(() => {
     onToken(null);
     if (!TURNSTILE_SITE_KEY || !container.current) return;
@@ -31,9 +32,9 @@ function TurnstileBox({ onToken, resetKey }: { onToken: (token: string | null) =
       widgetId = window.turnstile.render(container.current, {
         sitekey: TURNSTILE_SITE_KEY,
         theme: "auto",
-        callback: token => onToken(token),
+        callback: token => { setErrorCode(null); onToken(token); },
         "expired-callback": () => onToken(null),
-        "error-callback": () => onToken(null),
+        "error-callback": code => { setErrorCode(code ?? "inconnu"); onToken(null); return false; },
       });
     };
     const existing = document.getElementById("cloudflare-turnstile-script") as HTMLScriptElement | null;
@@ -55,7 +56,7 @@ function TurnstileBox({ onToken, resetKey }: { onToken: (token: string | null) =
       if (widgetId && window.turnstile) window.turnstile.remove(widgetId);
     };
   }, [onToken, resetKey]);
-  return <div className="space-y-1"><div ref={container} />{!TURNSTILE_SITE_KEY && <p className="text-xs text-destructive">Configuration Turnstile manquante : VITE_TURNSTILE_SITE_KEY.</p>}</div>;
+  return <div className="space-y-1"><div ref={container} />{errorCode && <p className="text-xs text-destructive">Vérification indisponible (code Cloudflare {errorCode}). {errorCode.startsWith("1102") ? "Ce site n'est pas autorisé pour cette clé Turnstile." : "Réessaie dans un instant."}</p>}{!TURNSTILE_SITE_KEY && <p className="text-xs text-destructive">Configuration Turnstile manquante : VITE_TURNSTILE_SITE_KEY.</p>}</div>;
 }
 
 export const Route = createFileRoute("/en-ligne")({ component: OnlinePage });
