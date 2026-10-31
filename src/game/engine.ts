@@ -21,6 +21,8 @@ export interface Player {
   shielded: boolean;
   /** Cartes posées et conservées dans la jauge (Léonard, Aligathor) : 0 point. */
   kept: Card[];
+  /** Gracula en attente du prochain Maudit Cadeau offert. */
+  gracula: Card[];
 }
 
 export type Pending =
@@ -71,6 +73,7 @@ export function createGame(seats: { name: string; isAI: boolean }[], opts: { dlc
     alive: true,
     shielded: false,
     kept: [] as Card[],
+    gracula: [] as Card[],
   }));
   return {
     players,
@@ -141,7 +144,7 @@ export function riposteOptions(s: GameState, pid: string): RiposteChoice[] {
 function checkElim(s: GameState, p: Player) {
   if (!p.alive || gaugeTotal(p) < MAX_GAUGE) return;
   p.alive = false;
-  const back = [...p.hand, ...p.kept, ...p.gauge.flatMap((g) => [...g.base, ...g.extras])];
+  const back = [...p.hand, ...p.kept, ...(p.gracula ?? []), ...p.gauge.flatMap((g) => [...g.base, ...g.extras])];
   p.hand = [];
   p.gauge = [];
   p.kept = [];
@@ -168,6 +171,8 @@ function syncLeonard(s: GameState) {
 }
 function addGift(s: GameState, p: Player, c: Card) {
   const it = newItem([c], c.value!);
+  it.extras.push(...(p.gracula ?? []));
+  p.gracula = [];
   adjust(s, it);
   p.gauge.push(it);
 }
@@ -181,7 +186,7 @@ function keepScore(c: Card) {
 function deliver(s: GameState, pend: Pending) {
   const target = P(s, pend.to);
   if (target.shielded && pend.type === "gift") {
-    s.discard.push(...pend.item.base);
+    s.discard.push(...pend.item.base, ...pend.item.extras);
     log(s, `❄️ ${target.name} est à l'abri chez le Yéti !`);
     return;
   }
@@ -385,10 +390,19 @@ export function playAntidotes(st: GameState, pid: string, antidoteIds: string[],
 export function playTrick(st: GameState, pid: string, cardId: string, tid: string, itemId?: string) {
   const s = clone(st);
   assertTurn(s, pid);
-  assertTarget(s, pid, tid);
   const p = P(s, pid);
   const c = p.hand.find((x) => x.id === cardId);
   if (!c || c.kind !== "trick") throw new GameError("Ce n'est pas une Fourberie");
+  if (c.effect === "gracula") {
+    take(p, cardId);
+    p.gracula ??= [];
+    p.gracula.push(c);
+    s.playsLeft--;
+    log(s, `🧛 ${p.name} prépare Gracula : son prochain Maudit Cadeau gagne +1 pt (${p.gracula.length} en attente)`);
+    afterAction(s);
+    return s;
+  }
+  assertTarget(s, pid, tid);
   if (ATTACH_BONUS[c.effect!] && !P(s, tid).gauge.length)
     throw new GameError("Ce joueur n'a aucun cadeau dans sa jauge");
   if (c.effect === "leonard") {
@@ -470,7 +484,7 @@ export function respond(st: GameState, pid: string, choice: RiposteChoice | null
   if (!pend || pend.to !== pid) throw new GameError("Aucune riposte attendue");
   s.pending = null;
   const me = P(s, pid);
-  const attackCards = pend.type === "gift" ? [...pend.item.base] : [pend.card];
+  const attackCards = pend.type === "gift" ? [...pend.item.base, ...pend.item.extras] : [pend.card];
   if (!choice) {
     resolve(s, pend);
   } else {
