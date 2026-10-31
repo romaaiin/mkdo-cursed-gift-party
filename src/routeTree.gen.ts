@@ -14,6 +14,7 @@ import { Route as CompteRouteImport } from './routes/compte'
 import { Route as HistoriqueRouteImport } from './routes/historique'
 import { Route as JeuRouteImport } from './routes/jeu'
 import { Route as ReglesRouteImport } from './routes/regles'
+import { Route as EnLigneRouteImport } from './routes/en-ligne'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -35,6 +36,11 @@ const JeuRoute = JeuRouteImport.update({
   path: '/jeu',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EnLigneRoute = EnLigneRouteImport.update({
+  id: '/en-ligne',
+  path: '/en-ligne',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReglesRoute = ReglesRouteImport.update({
   id: '/regles',
   path: '/regles',
@@ -47,6 +53,7 @@ export interface FileRoutesByFullPath {
   '/historique': typeof HistoriqueRoute
   '/jeu': typeof JeuRoute
   '/regles': typeof ReglesRoute
+  '/en-ligne': typeof EnLigneRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -54,6 +61,7 @@ export interface FileRoutesByTo {
   '/historique': typeof HistoriqueRoute
   '/jeu': typeof JeuRoute
   '/regles': typeof ReglesRoute
+  '/en-ligne': typeof EnLigneRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -62,13 +70,14 @@ export interface FileRoutesById {
   '/historique': typeof HistoriqueRoute
   '/jeu': typeof JeuRoute
   '/regles': typeof ReglesRoute
+  '/en-ligne': typeof EnLigneRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/compte' | '/historique' | '/jeu' | '/regles'
+  fullPaths: '/' | '/compte' | '/historique' | '/jeu' | '/regles' | '/en-ligne'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/compte' | '/historique' | '/jeu' | '/regles'
-  id: '__root__' | '/' | '/compte' | '/historique' | '/jeu' | '/regles'
+  to: '/' | '/compte' | '/historique' | '/jeu' | '/regles' | '/en-ligne'
+  id: '__root__' | '/' | '/compte' | '/historique' | '/jeu' | '/regles' | '/en-ligne'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -77,6 +86,7 @@ export interface RootRouteChildren {
   HistoriqueRoute: typeof HistoriqueRoute
   JeuRoute: typeof JeuRoute
   ReglesRoute: typeof ReglesRoute
+  EnLigneRoute: typeof EnLigneRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -115,6 +125,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/regles'
       preLoaderRoute: typeof ReglesRouteImport
       parentRoute: typeof rootRouteImport
+    },
+    '/en-ligne': {
+      id: '/en-ligne'
+      path: '/en-ligne'
+      fullPath: '/en-ligne'
+      preLoaderRoute: typeof EnLigneRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -125,6 +142,7 @@ const rootRouteChildren: RootRouteChildren = {
   HistoriqueRoute: HistoriqueRoute,
   JeuRoute: JeuRoute,
   ReglesRoute: ReglesRoute,
+  EnLigneRoute: EnLigneRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

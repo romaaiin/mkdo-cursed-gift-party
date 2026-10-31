@@ -18,7 +18,8 @@ export type Effect =
   | "trollol"
   | "aligathor"
   | "plante"
-  | "tentacule";
+  | "tentacule"
+  | "gracula";
 
 export interface Card {
   id: string;
@@ -35,11 +36,11 @@ export interface Card {
 }
 
 /** Fourberies posées sur un Maudit Cadeau et leur bonus de points. */
-export const ATTACH_BONUS: Partial<Record<Effect, number>> = { secourge: 2, momie: 3 };
+export const ATTACH_BONUS: Partial<Record<Effect, number>> = { secourge: 2, momie: 3, gracula: 1 };
 
 type Tpl = Omit<Card, "id">;
 
-/** Jeu de base Maudits Cadeaux (63 cartes). */
+/** Paquet de base Maudits Cadeaux (63 cartes, Gracula inclus). */
 export function buildDeck(): Card[] {
   const t: Tpl[] = [];
   const add = (n: number, c: Tpl) => {
@@ -54,8 +55,7 @@ export function buildDeck(): Card[] {
       inevitable,
       desc: `Offre-le à un adversaire : +${value} dans sa Maudite Jauge.${inevitable ? " INÉVITABLE : aucune riposte possible." : ""}`,
     });
-  gift(1, 5, "🧸");
-  gift(1, 4, "🧀");
+  gift(2, 4, "🧀");
   gift(4, 3, "🪆");
   gift(5, 2, "🥧");
   gift(3, 1, "🧦");
@@ -78,11 +78,11 @@ export function buildDeck(): Card[] {
   add(3, { kind: "trick", effect: "magichien", name: "Magichien d'Os", emoji: "🐕", desc: "Choisis une Fourberie dans les 4 premières cartes de la Défausse Septique. Reproduis immédiatement son pouvoir." });
   add(2, { kind: "trick", effect: "momie", name: "Momie Touthanpéku", emoji: "🧻", desc: "Pose-la sur un Maudit Cadeau d'un adversaire : +3 pts." });
   add(3, { kind: "trick", effect: "vol", name: "Vol à l'arraché", emoji: "🦝", desc: "Défausse une carte de ta main pour piocher une carte dans la main d'un autre joueur." });
-  add(2, { kind: "trick", effect: "franken", name: "Frankenschlingue", emoji: "🧟", desc: "Échange les cartes de ta jauge avec celles d'un autre joueur." });
-  add(2, { kind: "trick", effect: "secourge", name: "Au secourge", emoji: "🎃", desc: "Pose-la sur un Maudit Cadeau d'un adversaire : +2 pts." });
   add(3, { kind: "trick", effect: "petgaz", name: "Petgaz à effet de serre", emoji: "💨", desc: "Si tu as 5 points ou plus dans ta jauge, pioche une carte dans la main d'un autre joueur." });
   add(3, { kind: "trick", effect: "dramacula", name: "Dramacula", emoji: "🧛", desc: "Choisis un joueur, il pioche une carte et la révèle. Si c'est un Maudit Cadeau, il la met dans sa jauge, sinon il l'ajoute à sa main." });
-  add(2, { kind: "trick", effect: "deuil", name: "Jour de deuil", emoji: "⚰️", desc: "Choisis une carte au hasard dans la main d'un autre joueur et mets-la dans la Défausse Septique." });
+  add(3, { kind: "trick", effect: "gracula", name: "Gracula", emoji: "🧛", desc: "Pose Gracula devant toi. Ton prochain Maudit Cadeau offert gagne +1 point. Plusieurs Gracula se cumulent et restent en attente jusqu'au prochain cadeau." });
+
+  add(3, { kind: "trick", effect: "deuil", name: "Jour de deuil", emoji: "⚰️", desc: "Choisis une carte au hasard dans la main d'un autre joueur et mets-la dans la Défausse Septique." });
 
   add(2, { kind: "defense", effect: "sirene", name: "Sirène d'urgence", emoji: "🚨", desc: "Défausse le plus gros Maudit Cadeau de ta jauge." });
   add(3, { kind: "defense", effect: "protection", riposte: true, name: "Protection de la Raie", emoji: "🐟", desc: "RIPOSTE : te protège d'une Fourberie ou d'un Maudit Cadeau que l'on t'offre." });

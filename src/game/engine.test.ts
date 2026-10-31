@@ -4,6 +4,7 @@ import {
   createGame,
   endTurn,
   gaugeTotal,
+  itemValue,
   playAntidotes,
   playGift,
   playUselessCombo,
@@ -131,7 +132,42 @@ describe("Maudits Cadeaux rules", () => {
   it("base deck has 63 cards with 21 Maudits Cadeaux", () => {
     const d = buildDeck();
     expect(d.length).toBe(63);
+    expect(d.filter((card) => card.effect === "gracula")).toHaveLength(3);
     expect(d.filter((c) => c.kind === "gift").length).toBe(21);
+  });
+
+  it("Gracula stacks and adds +1 to the next gift", () => {
+    const g1 = trick("gracula"), g2 = trick("gracula"), present = gift(2);
+    const s = setup([g1, g2, present], []);
+    const first = playTrick(s, "p0", g1.id, "p0");
+    expect(first.players[0]!.gracula).toHaveLength(1);
+    const second = playTrick(first, "p0", g2.id, "p0");
+    expect(second.players[0]!.gracula).toHaveLength(2);
+    const offered = playGift(second, "p0", present.id, "p1");
+    expect(offered.players[0]!.gracula).toHaveLength(0);
+    expect(offered.players[1]!.gauge[0]!.extras).toHaveLength(2);
+    expect(gaugeTotal(offered.players[1]!)).toBe(4);
+  });
+
+  it("Gracula remains pending until a gift is available", () => {
+    const g = trick("gracula");
+    const s = setup([g], []);
+    const r = playTrick(s, "p0", g.id, "p0");
+    expect(r.players[0]!.gracula).toHaveLength(1);
+    expect(r.players[0]!.hand).toHaveLength(0);
+  });
+
+  it("Gracula bonus counts toward antidote value", () => {
+    const g = trick("gracula"), present = gift(2), antidote = anti(3);
+    const s = setup([g, present], []);
+    s.players[1]!.hand = [antidote];
+    const staged = playTrick(s, "p0", g.id, "p0");
+    const offered = playGift(staged, "p0", present.id, "p1");
+    const item = offered.players[1]!.gauge[0]!;
+    expect(itemValue(item)).toBe(3);
+    offered.current = 1;
+    const cured = playAntidotes(offered, "p1", [antidote.id], [item.id]);
+    expect(gaugeTotal(cured.players[1]!)).toBe(0);
   });
 
   it("Momie Touthanpéku adds 3 to a gift", () => {
@@ -188,6 +224,16 @@ describe("effets officiels des Fourberies", () => {
     const r = play(s, d);
     expect(gaugeTotal(r.players[1]!)).toBe(2);
     expect(r.players[1]!.hand).toHaveLength(0);
+  });
+
+  it("Plante does not consume pending Gracula", () => {
+    const plant = trick("plante"), forcedGift = gift(2), gracula = trick("gracula");
+    const s = setup([plant], [forcedGift]);
+    s.players[1]!.gracula = [gracula];
+    const r = playTrick(s, "p0", plant.id, "p1");
+    expect(gaugeTotal(r.players[1]!)).toBe(2);
+    expect(r.players[1]!.gauge[0]!.extras).toHaveLength(0);
+    expect(r.players[1]!.gracula).toHaveLength(1);
   });
 
   it("Dramacula : une autre carte piochée reste dans la main de la cible", () => {

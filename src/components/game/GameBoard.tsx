@@ -53,6 +53,8 @@ export function GameBoard({ bots, dlc = false }: { bots: number; dlc?: boolean }
   const [cureA, setCureA] = useState<string[]>([]);
   const [cureG, setCureG] = useState<string[]>([]);
   const [err, setErr] = useState<string | null>(null);
+  const [playedPreview, setPlayedPreview] = useState<{ cards: Card[]; result: string } | null>(null);
+  const previousGame = useRef<GameState | null>(null);
   const [expanded, setExpanded] = useState(false);
   const [guided, setGuided] = useState(false);
   const [progress, setProgress] = useState(INITIAL_TUTORIAL);
@@ -72,6 +74,24 @@ export function GameBoard({ bots, dlc = false }: { bots: number; dlc?: boolean }
     sound(s.winner ? "win" : s.pending?.to === ME ? "attack" : "turn");
   }, [s?.seq, s?.pending, s?.winner]);
 
+  // Keep a short visual trace of cards removed from hands by either player or AI.
+  useEffect(() => {
+    if (!s) return;
+    const previous = previousGame.current;
+    previousGame.current = s;
+    if (!previous) return;
+    const remaining = new Set(s.players.flatMap((p) => p.hand.map((card) => card.id)));
+    const played = previous.players.flatMap((p) => p.hand).filter((card) => !remaining.has(card.id));
+    if (!played.length) return;
+    setPlayedPreview({ cards: played.slice(0, 3), result: s.log.at(-1) ?? "Carte jouée" });
+  }, [s]);
+
+  useEffect(() => {
+    if (!playedPreview) return;
+    const id = window.setTimeout(() => setPlayedPreview(null), 2800);
+    return () => window.clearTimeout(id);
+  }, [playedPreview]);
+
   // Drive AI turns and AI ripostes
   useEffect(() => {
     if (!s || s.winner || (guided && step === "welcome")) return;
@@ -79,11 +99,11 @@ export function GameBoard({ bots, dlc = false }: { bots: number; dlc?: boolean }
       const target = s.pending.to;
       const t = s.players.find((p) => p.id === target);
       if (!t?.isAI) return;
-      const id = setTimeout(() => setS(respond(s, t.id, aiRiposte(s, t.id))), 800);
+      const id = setTimeout(() => setS(respond(s, t.id, aiRiposte(s, t.id))), 1500);
       return () => clearTimeout(id);
     }
     if (s.players[s.current]?.isAI) {
-      const id = setTimeout(() => setS(aiStep(s)), 900);
+      const id = setTimeout(() => setS(aiStep(s)), 3000);
       return () => clearTimeout(id);
     }
     return undefined;
@@ -216,6 +236,11 @@ export function GameBoard({ bots, dlc = false }: { bots: number; dlc?: boolean }
             <span className="text-front">Défausse Septique</span>
           </div>
         </div>
+        {playedPreview && !pendingForMe && <div className="played-card-preview" role="status" aria-live="polite">
+          <div className="played-card-preview__cards">{playedPreview.cards.map((played) => <CardView key={played.id} card={played} size="sm" />)}</div>
+          <div className="played-card-preview__text"><strong>Carte jouée</strong><p>{playedPreview.cards.map((played) => played.name).join(" · ")}</p><p>{playedPreview.result}</p></div>
+        </div>}
+
         <div className="turn-status" aria-live="polite">
           <strong>{myTurn ? "À toi de maudire !" : `${current?.name ?? ""} joue…`}</strong>
           <p>{s.log.at(-1)}</p>
@@ -224,7 +249,7 @@ export function GameBoard({ bots, dlc = false }: { bots: number; dlc?: boolean }
         <section className="player-gauge">
           <p className="text-front flex items-center gap-2 font-display text-primary"><img src={avatarUrl(profile.avatar)} alt="" className="h-6 w-6 rounded-full object-cover" /><span className="truncate">{me.name}</span>{me.shielded && " ❄️"}</p>
           <Gauge player={me} />
-          <p className="text-front mt-2 text-[10px] text-muted-foreground">{me.hand.length} cartes · {myTurn ? `${s.playsLeft} coups` : "En attente"}</p>
+          <p className="text-front mt-2 text-[10px] text-muted-foreground">{me.hand.length} cartes · {myTurn ? `${s.playsLeft} coups` : "En attente"}{(me.gracula?.length ?? 0) > 0 ? ` · ${me.gracula.length} Gracula en attente (+${me.gracula.length})` : ""}</p>
         </section>
         <PlayerHand cards={me.hand} selected={sel} onSelect={open} />
         <div className="finish-turn">
@@ -300,6 +325,12 @@ function ActionPanel({
         <Targets gift onPick={(t) => act(() => playUselessCombo(s, ME, [card.id, useless.find((u) => u.id !== card.id)?.id ?? ""], t))} />
       </>
     ) : <p>Inutile seul… Garde-en 2 pour un combo, ou 3 pour un Cacarma.</p>;
+  else if (card.effect === "gracula")
+    body = (
+      <Button className="btn-slime px-6 py-2" onClick={() => act(() => playTrick(s, ME, card.id, ME))}>
+        Préparer Gracula (+1 au prochain cadeau)
+      </Button>
+    );
   else if (card.effect === "leonard")
     body = (
       <Button className="btn-slime px-6 py-2" onClick={() => act(() => playTrick(s, ME, card.id, s.players.find((p) => p.id !== ME && p.alive)!.id))}>
