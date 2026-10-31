@@ -23,8 +23,19 @@ Deno.serve(async (req) => {
   const { data: auth, error: authError } = await client.auth.getUser();
   if (authError || !auth.user) return json({ error: "invalid_session" }, 401);
 
-  let body: { action?: string; nickname?: string; avatar?: string; code?: string; visibility?: "public" | "private"; maxPlayers?: number; dlc?: boolean };
+  let body: { action?: string; nickname?: string; avatar?: string; code?: string; roomId?: string; visibility?: "public" | "private"; maxPlayers?: number; dlc?: boolean };
   try { body = await req.json(); } catch { return json({ error: "invalid_json" }, 400); }
+  if (body.action === "snapshot") {
+    if (!body.roomId) return json({ error: "room_id_required" }, 400);
+    const { data: membership } = await client.from("mkdo_room_members").select("user_id").eq("room_id", body.roomId).eq("user_id", auth.user.id).maybeSingle();
+    if (!membership) return json({ error: "not_a_room_member" }, 403);
+    const [{ data: room, error: roomError }, { data: members, error: membersError }] = await Promise.all([
+      client.from("mkdo_rooms").select("id,code,visibility,status,host_id,max_players,dlc_enabled,state_version,created_at,expires_at").eq("id", body.roomId).single(),
+      client.from("mkdo_room_members").select("user_id,nickname,avatar,seat,status,joined_at").eq("room_id", body.roomId).order("seat"),
+    ]);
+    if (roomError || membersError) return json({ error: "room_snapshot_failed" }, 500);
+    return json({ room, members, userId: auth.user.id });
+  }
   const nickname = (body.nickname ?? "").trim();
   if (nickname.length < 2 || nickname.length > 20) return json({ error: "invalid_nickname" }, 400);
   const avatar = (body.avatar ?? "default").slice(0, 40);
