@@ -209,6 +209,12 @@ function resolve(s: GameState, pend: Pending) {
     return;
   }
   const c = pend.card;
+  if (c.effect === "gracula") {
+    from.gracula ??= [];
+    from.gracula.push(c);
+    log(s, `🧛 ${from.name} prépare Gracula : son prochain Maudit Cadeau gagne +1 pt (${from.gracula.length} en attente)`);
+    return;
+  }
   const bonus = ATTACH_BONUS[c.effect!];
   if (bonus) {
     const it =
