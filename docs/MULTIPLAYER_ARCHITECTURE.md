@@ -2,43 +2,53 @@
 
 ## Décisions
 - Backend : Supabase (Auth, PostgreSQL, Realtime, Edge Functions).
-- Modes : matchmaking public mondial et salons privés par code à 6 caractères.
-- Identité : invité (session anonyme Supabase) ou compte durable (email/mot de passe, puis OAuth éventuel).
-- Capacité initiale : 2 à 4 joueurs, configurable, à confirmer selon les règles finales.
-- Source de vérité : serveur. Le client ne doit jamais écrire directement le résultat d'une action ni le champ `game_state`.
+- Modes prévus : matchmaking public mondial et salons privés par code à 6 caractères.
+- Identité : invité (session anonyme Supabase) ou compte durable (e-mail/mot de passe).
+- Capacité initiale : 2 à 4 joueurs, configurable, 4 par défaut.
+- Source de vérité cible : serveur. Le navigateur ne doit jamais écrire le résultat d'une action ni l'état privé d'une partie.
+
+## Infrastructure provisionnée
+- Projet Supabase : `jjffnvexrnichsfayhnf`, région Paris (`eu-west-3`), organisation RG Org, plan Free.
+- Tables : `mkdo_profiles`, `mkdo_rooms`, `mkdo_room_members`, `mkdo_game_states`.
+- Deux migrations appliquées : fondation multijoueur et durcissement des permissions.
+- Edge Function `room-api` déployée avec vérification JWT.
+- Clé publishable utilisée côté navigateur : jamais de clé `service_role` dans le frontend.
+- Le client de la branche pointe par défaut vers ce projet; les variables `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY` peuvent surcharger la configuration.
 
 ## Modèle de données
 - `mkdo_profiles` : pseudo et avatar.
 - `mkdo_rooms` : code, visibilité, hôte, capacité, statut, configuration et version d'état.
 - `mkdo_room_members` : joueurs, siège et présence.
-- `mkdo_rooms.game_state` : état serveur uniquement, non lisible par les autres joueurs via une policy directe. Une Edge Function devra produire une vue filtrée par joueur pour ne jamais révéler les mains adverses.
+- `mkdo_game_states` : état privé non exposé aux rôles clients. Les projections de partie doivent être générées côté serveur et masquer les mains adverses.
 
-La migration initiale ajoute les tables, les index, les règles RLS et les fonctions transactionnelles de création, de rejoindre par code et de matchmaking. Les mutations sont refusées directement depuis le navigateur.
+Les fonctions SQL transactionnelles gèrent la création, l'entrée par code et le matchmaking. Les écritures directes du navigateur sont interdites. Les fonctions `SECURITY DEFINER` sont réservées au rôle authentifié et contrôlent `auth.uid()`; la fonction utilitaire d'appartenance est dans le schéma privé.
 
-## Flux
-1. Le client crée une session invitée Supabase ou ouvre une session de compte.
-2. Matchmaking : recherche transactionnelle d'une salle publique en attente, ou création d'une nouvelle salle.
-3. Partie privée : l'hôte crée une salle privée et partage le code; les amis la rejoignent.
-4. Realtime diffuse les changements de roster et de statut.
-5. Une Edge Function vérifie l'identité, le siège, le tour, la carte jouée et la riposte, applique le moteur et incrémente `state_version`.
-6. Le serveur envoie à chaque joueur une projection de l'état qui masque les mains adverses.
-7. Reconnexion : relecture de la projection courante; déconnexion temporaire conserve le siège pendant une période définie.
+## Flux implémenté à ce stade
+1. Le client crée une session invitée ou ouvre une session e-mail/mot de passe.
+2. Matchmaking : recherche transactionnelle d'une salle publique en attente, ou création d'une salle.
+3. Salle privée : création et partage du code; entrée par code.
+4. La fonction Edge renvoie les métadonnées du salon et son roster.
+5. Le client renouvelle le jeton de session avant expiration.
+6. Le lobby actualise actuellement son état par polling toutes les 2,5 secondes.
 
-## Sécurité obligatoire avant ouverture publique
-- Auth anonyme activée et fournisseur email configuré dans Supabase.
-- Secrets `SUPABASE_URL` et `SUPABASE_SERVICE_ROLE_KEY` uniquement côté Edge Functions.
-- RLS activée; aucun accès client direct en écriture à l'état.
-- Validation serveur de toutes les actions; anti-rejeu via `state_version`.
-- Limitation de débit des créations de salles et tentatives de code.
-- Expiration/nettoyage des salles inactives.
-- Ne jamais diffuser `game_state` brut : les mains adverses sont confidentielles.
+## Travaux obligatoires avant une partie jouable
+- Activer les connexions anonymes dans Supabase Auth (Dashboard > Authentication > Providers > Anonymous Sign-Ins). Cette bascule n'est pas exposée par l'outil de gestion connecté.
+- Tester réellement deux identités distinctes sur Auth, création, matchmaking et entrée par code.
+- Remplacer le polling par Supabase Realtime.
+- Implémenter le démarrage de partie, les actions autoritaires, l'anti-rejeu via `state_version`, les projections privées par joueur et les ripostes côté serveur.
+- Intégrer le plateau `GameBoard` à une session réseau sans laisser le client calculer ou publier un état faisant autorité.
+- Gérer reconnexion, départ, expiration et nettoyage des salons.
+- Ajouter limitation de débit et CAPTCHA avant ouverture publique.
+
+## Sécurité
+- Ne jamais exposer `service_role` ou une clé secrète dans le navigateur.
+- RLS activée sur toutes les tables du schéma public.
+- `mkdo_game_states` reste inaccessible aux rôles clients.
+- Ne jamais diffuser l'état brut : les mains adverses sont confidentielles.
+- Vérifier l'identité, le siège, le tour, les cartes et la version d'état pour chaque action.
 
 ## Déploiement
-1. Créer le projet Supabase dans la région Europe (Frankfurt/Paris si disponible).
-2. Configurer Auth : anonymous + email/password; définir URLs de redirection.
-3. Appliquer `supabase/migrations/20261031000100_mkdo_multiplayer.sql`.
-4. Déployer les Edge Functions et renseigner les variables d'environnement publiques du client.
-5. Tester avec deux comptes navigateurs distincts et un client mobile avant activation du bouton en production.
+Le projet Supabase existe et la base ainsi que `room-api` sont déployées. La configuration Auth anonyme doit encore être activée manuellement dans le Dashboard. Le client utilise la clé publishable et l'URL du projet en configuration par défaut.
 
 ## Coûts et exploitation
-Le plan Free peut suffire au prototype et aux premiers tests. Pour un jeu public, budgéter une offre payante dès que la disponibilité, la rétention et les limites de connexions/Realtime du plan gratuit deviennent insuffisantes. Mesurer MAU, connexions simultanées, messages Realtime, stockage et appels Edge avant engagement financier.
+Le projet est actuellement sur l'offre Free. Aucun passage à une offre payante n'a été demandé. Surveiller les quotas, les pauses de projet, la charge Realtime, les utilisateurs actifs, le stockage et les appels Edge. Réévaluer le coût uniquement à partir d'une charge mesurée avant lancement public.
