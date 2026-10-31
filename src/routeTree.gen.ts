@@ -76,7 +76,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths: '/' | '/compte' | '/historique' | '/jeu' | '/regles' | '/en-ligne'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/compte' | '/historique' | '/jeu' | '/regles'
+  to: '/' | '/compte' | '/historique' | '/jeu' | '/regles' | '/en-ligne'
   id: '__root__' | '/' | '/compte' | '/historique' | '/jeu' | '/regles' | '/en-ligne'
   fileRoutesById: FileRoutesById
 }
