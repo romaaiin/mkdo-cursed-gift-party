@@ -84,9 +84,13 @@ export function GameBoard({ bots, dlc = false }: { bots: number; dlc?: boolean }
     const played = previous.players.flatMap((p) => p.hand).filter((card) => !remaining.has(card.id));
     if (!played.length) return;
     setPlayedPreview({ cards: played.slice(0, 3), result: s.log.at(-1) ?? "Carte jouée" });
+  }, [s]);
+
+  useEffect(() => {
+    if (!playedPreview) return;
     const id = window.setTimeout(() => setPlayedPreview(null), 2800);
     return () => window.clearTimeout(id);
-  }, [s]);
+  }, [playedPreview]);
 
   // Drive AI turns and AI ripostes
   useEffect(() => {
