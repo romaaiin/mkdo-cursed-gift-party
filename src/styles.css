@@ -197,6 +197,15 @@
 .table-pile .card-back { font-size: 17px; box-shadow: 3px 3px 0 var(--card-edge), 6px 6px 0 var(--ink), var(--shadow-game-card); }
 .table-pile .game-card { font-size: 8px; }
 .discard-empty { border: 2px dashed var(--primary); border-radius: 6px; opacity: .45; }
+.played-card-preview { position: absolute; z-index: 29; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 12px; width: min(420px, 70%); padding: 10px 14px; border: 2px solid var(--primary); border-radius: 10px; background: color-mix(in oklab, var(--popover) 94%, transparent); box-shadow: var(--shadow-game-card), var(--glow-neon); pointer-events: none; animation: played-card-in .18s ease-out; }
+.played-card-preview__cards { display: flex; flex-shrink: 0; align-items: center; gap: 5px; }
+.played-card-preview__cards .game-card { width: 54px; height: 78px; font-size: 7px; }
+.played-card-preview__text { min-width: 0; color: var(--foreground); font-size: 11px; line-height: 1.35; text-shadow: none; }
+.played-card-preview__text strong { display: block; color: var(--primary); font-family: var(--font-display); font-size: 14px; margin-bottom: 3px; }
+.played-card-preview__text p { overflow-wrap: anywhere; }
+@keyframes played-card-in { from { opacity: 0; transform: translate(-50%, -46%); } to { opacity: 1; transform: translate(-50%, -50%); } }
+@media (max-height: 430px) and (orientation: landscape), (max-width: 430px) and (orientation: portrait) { .played-card-preview { width: min(340px, 68%); padding: 6px 8px; gap: 8px; } .played-card-preview__cards .game-card { width: 42px; height: 60px; font-size: 6px; } .played-card-preview__text { font-size: 9px; } .played-card-preview__text strong { font-size: 11px; } }
+
 .turn-status { position: absolute; bottom: calc(var(--hand-band) + 2px); left: 50%; transform: translateX(-50%); width: 44%; text-align: center; font-size: 11px; text-shadow: 1px 1px var(--ink); z-index: 24; pointer-events: none; }
 .turn-status strong { display: block; color: var(--primary); font-family: var(--font-display); font-size: 16px; margin-bottom: 3px; }
 .player-gauge { position: absolute; bottom: 16px; left: 16px; width: 145px; z-index: 26; }
