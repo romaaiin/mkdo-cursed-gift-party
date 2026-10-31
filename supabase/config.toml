@@ -1,0 +1,4 @@
+project_id = "mkdo-cursed-gift-party"
+
+[functions.room-api]
+verify_jwt = true
