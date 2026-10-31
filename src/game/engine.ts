@@ -359,7 +359,10 @@ export function playUselessCombo(st: GameState, pid: string, ids: string[], tid:
   ids.forEach((id) => take(p, id));
   s.playsLeft -= 2;
   s.giftGiven = true;
-  deliver(s, { type: "gift", from: pid, to: tid, item: newItem(cards, 1), inevitable: true });
+  const item = newItem(cards, 1);
+  item.extras.push(...(p.gracula ?? []));
+  p.gracula = [];
+  deliver(s, { type: "gift", from: pid, to: tid, item, inevitable: true });
   afterAction(s);
   return s;
 }
