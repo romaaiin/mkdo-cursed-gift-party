@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowLeft, Copy, Globe2, LockKeyhole, Users } from "lucide-react";
 import background from "@/assets/lobby-background.jpg";
 import { Button } from "@/components/ui/button";
@@ -73,7 +73,7 @@ function OnlinePage() {
   const [captchaResetKey, setCaptchaResetKey] = useState(0);
   const configured = isOnlineConfigured();
   const captchaConfigured = Boolean(TURNSTILE_SITE_KEY);
-  const onCaptchaToken = (token: string | null) => setCaptchaToken(token);
+  const onCaptchaToken = useCallback((token: string | null) => setCaptchaToken(token), []);
   const run = async (action: () => Promise<void>) => { setBusy(true); setError(""); setNotice(""); try { await action(); } catch (e) { setError(e instanceof Error ? e.message : "Une erreur est survenue"); } finally { setBusy(false); } };
   const authenticateWithCaptcha = (auth: (token: string) => Promise<OnlineSession>) => run(async () => {
     if (!captchaToken) throw new Error("Valide le contrôle anti-robot avant de continuer.");
