@@ -224,7 +224,7 @@ export function GameBoard({ bots, dlc = false }: { bots: number; dlc?: boolean }
         <section className="player-gauge">
           <p className="text-front flex items-center gap-2 font-display text-primary"><img src={avatarUrl(profile.avatar)} alt="" className="h-6 w-6 rounded-full object-cover" /><span className="truncate">{me.name}</span>{me.shielded && " ❄️"}</p>
           <Gauge player={me} />
-          <p className="text-front mt-2 text-[10px] text-muted-foreground">{me.hand.length} cartes · {myTurn ? `${s.playsLeft} coups` : "En attente"}</p>
+          <p className="text-front mt-2 text-[10px] text-muted-foreground">{me.hand.length} cartes · {myTurn ? `${s.playsLeft} coups` : "En attente"}{(me.gracula?.length ?? 0) > 0 ? ` · ${me.gracula.length} Gracula en attente (+${me.gracula.length})` : ""}</p>
         </section>
         <PlayerHand cards={me.hand} selected={sel} onSelect={open} />
         <div className="finish-turn">
@@ -300,6 +300,12 @@ function ActionPanel({
         <Targets gift onPick={(t) => act(() => playUselessCombo(s, ME, [card.id, useless.find((u) => u.id !== card.id)?.id ?? ""], t))} />
       </>
     ) : <p>Inutile seul… Garde-en 2 pour un combo, ou 3 pour un Cacarma.</p>;
+  else if (card.effect === "gracula")
+    body = (
+      <Button className="btn-slime px-6 py-2" onClick={() => act(() => playTrick(s, ME, card.id, ME))}>
+        Préparer Gracula (+1 au prochain cadeau)
+      </Button>
+    );
   else if (card.effect === "leonard")
     body = (
       <Button className="btn-slime px-6 py-2" onClick={() => act(() => playTrick(s, ME, card.id, s.players.find((p) => p.id !== ME && p.alive)!.id))}>
