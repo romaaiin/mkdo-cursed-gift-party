@@ -53,6 +53,8 @@ export function GameBoard({ bots, dlc = false }: { bots: number; dlc?: boolean }
   const [cureA, setCureA] = useState<string[]>([]);
   const [cureG, setCureG] = useState<string[]>([]);
   const [err, setErr] = useState<string | null>(null);
+  const [playedPreview, setPlayedPreview] = useState<{ cards: Card[]; result: string } | null>(null);
+  const previousGame = useRef<GameState | null>(null);
   const [expanded, setExpanded] = useState(false);
   const [guided, setGuided] = useState(false);
   const [progress, setProgress] = useState(INITIAL_TUTORIAL);
@@ -72,6 +74,20 @@ export function GameBoard({ bots, dlc = false }: { bots: number; dlc?: boolean }
     sound(s.winner ? "win" : s.pending?.to === ME ? "attack" : "turn");
   }, [s?.seq, s?.pending, s?.winner]);
 
+  // Keep a short visual trace of cards removed from hands by either player or AI.
+  useEffect(() => {
+    if (!s) return;
+    const previous = previousGame.current;
+    previousGame.current = s;
+    if (!previous) return;
+    const remaining = new Set(s.players.flatMap((p) => p.hand.map((card) => card.id)));
+    const played = previous.players.flatMap((p) => p.hand).filter((card) => !remaining.has(card.id));
+    if (!played.length) return;
+    setPlayedPreview({ cards: played.slice(0, 3), result: s.log.at(-1) ?? "Carte jouée" });
+    const id = window.setTimeout(() => setPlayedPreview(null), 2800);
+    return () => window.clearTimeout(id);
+  }, [s]);
+
   // Drive AI turns and AI ripostes
   useEffect(() => {
     if (!s || s.winner || (guided && step === "welcome")) return;
@@ -79,11 +95,11 @@ export function GameBoard({ bots, dlc = false }: { bots: number; dlc?: boolean }
       const target = s.pending.to;
       const t = s.players.find((p) => p.id === target);
       if (!t?.isAI) return;
-      const id = setTimeout(() => setS(respond(s, t.id, aiRiposte(s, t.id))), 800);
+      const id = setTimeout(() => setS(respond(s, t.id, aiRiposte(s, t.id))), 1500);
       return () => clearTimeout(id);
     }
     if (s.players[s.current]?.isAI) {
-      const id = setTimeout(() => setS(aiStep(s)), 900);
+      const id = setTimeout(() => setS(aiStep(s)), 3000);
       return () => clearTimeout(id);
     }
     return undefined;
@@ -216,6 +232,11 @@ export function GameBoard({ bots, dlc = false }: { bots: number; dlc?: boolean }
             <span className="text-front">Défausse Septique</span>
           </div>
         </div>
+        {playedPreview && !pendingForMe && <div className="played-card-preview" role="status" aria-live="polite">
+          <div className="played-card-preview__cards">{playedPreview.cards.map((played) => <CardView key={played.id} card={played} size="sm" />)}</div>
+          <div className="played-card-preview__text"><strong>Carte jouée</strong><p>{playedPreview.cards.map((played) => played.name).join(" · ")}</p><p>{playedPreview.result}</p></div>
+        </div>}
+
         <div className="turn-status" aria-live="polite">
           <strong>{myTurn ? "À toi de maudire !" : `${current?.name ?? ""} joue…`}</strong>
           <p>{s.log.at(-1)}</p>
