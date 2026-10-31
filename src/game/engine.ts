@@ -148,6 +148,7 @@ function checkElim(s: GameState, p: Player) {
   p.hand = [];
   p.gauge = [];
   p.kept = [];
+  p.gracula = [];
   syncLeonard(s);
   s.deck = shuffle([...s.deck, ...back]);
   log(s, `💀 ${p.name} est éliminé(e) ! Ses cartes retournent dans la pioche.`);
@@ -170,9 +171,8 @@ function syncLeonard(s: GameState) {
   s.players.forEach((p) => p.gauge.forEach((it) => adjust(s, it)));
 }
 function addGift(s: GameState, p: Player, c: Card) {
+  // Cadeau placé par un effet subi (Dramacula/Plante) : ce n'est pas un cadeau offert par le joueur.
   const it = newItem([c], c.value!);
-  it.extras.push(...(p.gracula ?? []));
-  p.gracula = [];
   adjust(s, it);
   p.gauge.push(it);
 }
