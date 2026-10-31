@@ -1,0 +1,53 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { ArrowLeft, Copy, Globe2, LockKeyhole, Users } from "lucide-react";
+import background from "@/assets/lobby-background.jpg";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { DEFAULT_PROFILE, loadLocal, parseProfile, PROFILE_KEY } from "@/game/profile";
+import { isOnlineConfigured, loadOnlineSession, roomApi, saveOnlineSession, signInAccount, signInGuest, signUpAccount, type OnlineSession, type RoomSnapshot } from "@/game/online";
+
+export const Route = createFileRoute("/en-ligne")({ component: OnlinePage });
+function OnlinePage() {
+  const [profile] = useState(() => loadLocal(PROFILE_KEY, parseProfile) ?? DEFAULT_PROFILE);
+  const [session, setSession] = useState<OnlineSession | null>(() => loadOnlineSession());
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [code, setCode] = useState("");
+  const [snapshot, setSnapshot] = useState<RoomSnapshot | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const configured = isOnlineConfigured();
+  const run = async (action: () => Promise<void>) => { setBusy(true); setError(""); setNotice(""); try { await action(); } catch (e) { setError(e instanceof Error ? e.message : "Une erreur est survenue"); } finally { setBusy(false); } };
+  const authenticate = (next: OnlineSession) => { setSession(next); setNotice(next.user.is_anonymous ? "Session invité créée." : "Connexion réussie."); };
+  const create = (visibility: "public" | "private") => run(async () => {
+    if (!session) throw new Error("Connecte-toi d'abord.");
+    setSnapshot(await roomApi<RoomSnapshot>(session, { action: "create", visibility, nickname: profile.name, avatar: profile.avatar, maxPlayers: 4 }));
+  });
+  const match = () => run(async () => {
+    if (!session) throw new Error("Connecte-toi d'abord.");
+    const result = await roomApi<RoomSnapshot>(session, { action: "matchmake", nickname: profile.name, avatar: profile.avatar, maxPlayers: 4 });
+    setSnapshot(result); setNotice(result.created ? "Recherche lancée : en attente d'autres joueurs." : "Salle trouvée : tu as rejoint la partie.");
+  });
+  const join = () => run(async () => {
+    if (!session) throw new Error("Connecte-toi d'abord.");
+    setSnapshot(await roomApi<RoomSnapshot>(session, { action: "join", code, nickname: profile.name, avatar: profile.avatar }));
+  });
+  useEffect(() => {
+    if (!session || !snapshot?.room.id) return;
+    let active = true;
+    const refresh = async () => { try { const next = await roomApi<RoomSnapshot>(session, { action: "snapshot", roomId: snapshot.room.id }); if (active) setSnapshot(next); } catch (e) { if (active) setError(e instanceof Error ? e.message : "Synchronisation interrompue"); } };
+    const id = window.setInterval(refresh, 2500);
+    return () => { active = false; window.clearInterval(id); };
+  }, [session, snapshot?.room.id]);
+  return <main className="landscape-shell"><div className="game-stage lobby-stage"><img src={background} alt="" className="table-art" />
+    <section className="page-panel"><header className="flex items-center gap-3"><Button size="icon" variant="outline" asChild><Link to="/" aria-label="Retour"><ArrowLeft /></Link></Button><h1 className="font-display text-2xl text-primary">Parties en ligne</h1></header>
+    <div className="page-scroll space-y-4">
+      {!configured && <div className="rounded-lg border border-amber-500/50 bg-amber-950/20 p-3 text-sm"><strong>Backend à configurer.</strong><p>Le socle multijoueur est dans le dépôt, mais aucune URL/clé Supabase n'est encore configurée. Le lobby ne peut pas se connecter tant que le projet Supabase n'est pas créé et migré.</p></div>}
+      {!session ? <div className="grid gap-3 md:grid-cols-2"><div className="rounded-lg border p-3 space-y-2"><h2 className="font-display text-lg">Jouer en invité</h2><p className="text-xs text-muted-foreground">Connexion immédiate sans inscription.</p><Button className="btn-slime w-full" disabled={!configured || busy} onClick={() => run(async () => authenticate(await signInGuest()))}>Continuer en invité</Button></div><div className="rounded-lg border p-3 space-y-2"><h2 className="font-display text-lg">Compte joueur</h2><Input type="email" placeholder="Adresse e-mail" value={email} onChange={e => setEmail(e.target.value)} /><Input type="password" placeholder="Mot de passe" value={password} onChange={e => setPassword(e.target.value)} /><div className="flex gap-2"><Button variant="outline" disabled={!configured || busy || !email || password.length < 8} onClick={() => run(async () => authenticate(await signInAccount(email, password)))}>Connexion</Button><Button className="btn-slime" disabled={!configured || busy || !email || password.length < 8} onClick={() => run(async () => authenticate(await signUpAccount(email, password)))}>Créer</Button></div><p className="text-[11px] text-muted-foreground">Mot de passe : 8 caractères minimum.</p></div></div> : <div className="rounded-lg border p-3 flex flex-wrap items-center justify-between gap-2"><span className="text-sm">Connecté : <strong>{profile.name}</strong> {session.user.is_anonymous ? "(invité)" : "(compte)"}</span><Button variant="outline" size="sm" onClick={() => { saveOnlineSession(null); setSession(null); setSnapshot(null); }}>Déconnexion</Button></div>}
+      {session && !snapshot && <div className="grid gap-3 md:grid-cols-2"><div className="rounded-lg border p-3 space-y-2"><Globe2 className="text-primary" /><h2 className="font-display text-lg">Partie aléatoire</h2><p className="text-xs text-muted-foreground">Rejoins une salle publique mondiale ou en crées une si aucune place n'est disponible.</p><Button className="btn-slime w-full" disabled={busy} onClick={match}>Trouver des joueurs</Button></div><div className="rounded-lg border p-3 space-y-2"><LockKeyhole className="text-primary" /><h2 className="font-display text-lg">Partie privée</h2><Button className="btn-slime w-full" disabled={busy} onClick={() => create("private")}>Créer une salle privée</Button><div className="flex gap-2"><Input placeholder="Code à 6 caractères" maxLength={6} value={code} onChange={e => setCode(e.target.value.toUpperCase())} /><Button variant="outline" disabled={busy || code.length !== 6} onClick={join}>Rejoindre</Button></div></div></div>}
+      {snapshot && <div className="rounded-lg border p-3 space-y-3"><div className="flex items-center justify-between gap-2"><h2 className="font-display text-lg">{snapshot.room.visibility === "private" ? "Salle privée" : "Salle publique"}</h2><span className="text-xs text-muted-foreground">{snapshot.members.length}/{snapshot.room.max_players} joueurs</span></div><div className="flex items-center gap-2"><span className="font-mono text-2xl tracking-widest">{snapshot.room.code}</span><Button size="icon" variant="outline" onClick={() => navigator.clipboard.writeText(snapshot.room.code)} aria-label="Copier le code"><Copy /></Button></div><div className="space-y-2">{snapshot.members.map(m => <div key={m.user_id} className="flex items-center gap-2 rounded-md bg-muted/40 p-2 text-sm"><Users className="h-4 w-4" /><span>{m.nickname}</span>{m.user_id === snapshot.room.host_id && <span className="ml-auto text-xs text-primary">Hôte</span>}</div>)}</div><p className="text-xs text-muted-foreground">En attente des autres joueurs. Synchronisation périodique du lobby.</p><Button variant="outline" onClick={() => setSnapshot(null)}>Retour aux salons</Button></div>}
+      {busy && <p className="text-xs text-muted-foreground">Connexion en cours…</p>}{notice && <p className="text-sm text-primary">{notice}</p>}{error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+    </div></section></div></main>;
+}
