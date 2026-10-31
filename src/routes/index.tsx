@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import background from "@/assets/lobby-background.jpg";
 import { Button } from "@/components/ui/button";
-import { Play, BookOpen, UserRound, History } from "lucide-react";
+import { Play, BookOpen, UserRound, History, Globe2 } from "lucide-react";
 import { SettingsControl } from "@/components/game/GameSettings";
 
 export const Route = createFileRoute("/")({
@@ -57,9 +57,7 @@ function Index() {
           Pack DLC : {dlc ? "activé" : "désactivé"}
         </Button>
         <Button asChild className="btn-slime h-auto py-3 text-xl"><Link to="/jeu" search={{ bots, dlc }}><Play />Jouer en solo</Link></Button>
-        <Button disabled variant="secondary" className="h-auto py-2 text-sm">
-          En ligne — bientôt
-        </Button>
+        <Button asChild variant="secondary" className="h-auto py-2 text-sm"><Link to="/en-ligne"><Globe2 />Jouer en ligne</Link></Button>
       </div>
       <div className="flex flex-wrap justify-center"><Button variant="link" asChild className="text-accent"><Link to="/regles"><BookOpen />Les règles</Link></Button><Button variant="link" asChild className="text-accent"><Link to="/compte"><UserRound />Mon compte</Link></Button><Button variant="link" asChild className="text-accent"><Link to="/historique"><History />Historique</Link></Button></div>
       </div>
