@@ -226,6 +226,16 @@ describe("effets officiels des Fourberies", () => {
     expect(r.players[1]!.hand).toHaveLength(0);
   });
 
+  it("Plante does not consume pending Gracula", () => {
+    const plant = trick("plante"), forcedGift = gift(2), gracula = trick("gracula");
+    const s = setup([plant], [forcedGift]);
+    s.players[1]!.gracula = [gracula];
+    const r = playTrick(s, "p0", plant.id, "p1");
+    expect(gaugeTotal(r.players[1]!)).toBe(2);
+    expect(r.players[1]!.gauge[0]!.extras).toHaveLength(0);
+    expect(r.players[1]!.gracula).toHaveLength(1);
+  });
+
   it("Dramacula : une autre carte piochée reste dans la main de la cible", () => {
     const d = trick("dramacula"), a = anti(1);
     const s = setup([d], []);
