@@ -19,9 +19,22 @@ declare global {
 
 const TURNSTILE_SITE_KEY = import.meta.env["VITE_TURNSTILE_SITE_KEY"] as string | undefined;
 
+// TEMPORARY diagnostic (non-sensitive): short sitekey fingerprint + document/frame origins at render time.
+const keyFingerprint = (key: string) => `${key.slice(0, 6)}…${key.slice(-4)} (${key.length} car.)`;
+interface TurnstileDiag { hostname: string; inFrame: boolean; topHost: string; ancestors: string; scripts: number; widgets: number; renderedKey: string; }
+function readFrameInfo() {
+  let inFrame = false; let topHost = "?";
+  try { inFrame = window.self !== window.top; } catch { inFrame = true; }
+  try { topHost = window.top?.location.hostname ?? "?"; } catch { topHost = "inaccessible (autre domaine)"; }
+  const list = (window.location as Location & { ancestorOrigins?: DOMStringList }).ancestorOrigins;
+  const ancestors = list ? Array.from({ length: list.length }, (_, i) => list.item(i) ?? "").join(" › ") || "aucun" : "non exposé";
+  return { inFrame, topHost, ancestors };
+}
+
 function TurnstileBox({ onToken, resetKey }: { onToken: (token: string | null) => void; resetKey: number }) {
   const container = useRef<HTMLDivElement>(null);
   const [errorCode, setErrorCode] = useState<string | null>(null);
+  const [diag, setDiag] = useState<TurnstileDiag | null>(null);
   useEffect(() => {
     onToken(null);
     if (!TURNSTILE_SITE_KEY || !container.current) return;
@@ -29,13 +42,23 @@ function TurnstileBox({ onToken, resetKey }: { onToken: (token: string | null) =
     let active = true;
     const render = () => {
       if (!active || !container.current || !window.turnstile || widgetId) return;
-      widgetId = window.turnstile.render(container.current, {
+      const options = {
         sitekey: TURNSTILE_SITE_KEY,
-        theme: "auto",
-        callback: token => { setErrorCode(null); onToken(token); },
+        theme: "auto" as const,
+        callback: (token: string) => { setErrorCode(null); onToken(token); },
         "expired-callback": () => onToken(null),
-        "error-callback": code => { setErrorCode(code ?? "inconnu"); onToken(null); return false; },
-      });
+        "error-callback": (code?: string) => { setErrorCode(code ?? "inconnu"); onToken(null); return false; },
+      };
+      widgetId = window.turnstile.render(container.current, options);
+      const next: TurnstileDiag = {
+        hostname: window.location.hostname,
+        ...readFrameInfo(),
+        scripts: document.querySelectorAll('script[src*="challenges.cloudflare.com/turnstile"]').length,
+        widgets: document.querySelectorAll('iframe[src*="challenges.cloudflare.com"]').length,
+        renderedKey: keyFingerprint(options.sitekey),
+      };
+      console.info("[turnstile-diag]", next);
+      setDiag(next);
     };
     const existing = document.getElementById("cloudflare-turnstile-script") as HTMLScriptElement | null;
     if (window.turnstile) render();
@@ -50,13 +73,24 @@ function TurnstileBox({ onToken, resetKey }: { onToken: (token: string | null) =
       script.addEventListener("error", () => onToken(null));
       document.head.appendChild(script);
     }
+    const recount = window.setTimeout(() => setDiag(d => d && { ...d, widgets: document.querySelectorAll('iframe[src*="challenges.cloudflare.com"]').length }), 3000);
     return () => {
       active = false;
+      window.clearTimeout(recount);
       if (existing) existing.removeEventListener("load", render);
       if (widgetId && window.turnstile) window.turnstile.remove(widgetId);
     };
   }, [onToken, resetKey]);
-  return <div className="space-y-1"><div ref={container} />{errorCode && <p className="text-xs text-destructive">Vérification indisponible (code Cloudflare {errorCode}). {errorCode.startsWith("1102") ? "Ce site n'est pas autorisé pour cette clé Turnstile." : "Réessaie dans un instant."}</p>}{!TURNSTILE_SITE_KEY && <p className="text-xs text-destructive">Configuration Turnstile manquante : VITE_TURNSTILE_SITE_KEY.</p>}</div>;
+  return <div className="space-y-1"><div ref={container} />{errorCode && <p className="text-xs text-destructive">Vérification indisponible (code Cloudflare {errorCode}). {errorCode.startsWith("1102") ? "Ce site n'est pas autorisé pour cette clé Turnstile." : "Réessaie dans un instant."}</p>}{!TURNSTILE_SITE_KEY && <p className="text-xs text-destructive">Configuration Turnstile manquante : VITE_TURNSTILE_SITE_KEY.</p>}
+    {diag && <dl className="rounded border border-dashed p-2 font-mono text-[10px] leading-tight text-muted-foreground" aria-label="Diagnostic Turnstile">
+      <div>Diagnostic temporaire</div>
+      <div>page : {diag.hostname}</div>
+      <div>dans un cadre : {diag.inFrame ? "oui" : "non"} · page parente : {diag.topHost}</div>
+      <div>origines parentes : {diag.ancestors}</div>
+      <div>clé utilisée : {diag.renderedKey}</div>
+      <div>scripts Turnstile : {diag.scripts} · widgets : {diag.widgets}</div>
+    </dl>}
+  </div>;
 }
 
 export const Route = createFileRoute("/en-ligne")({ component: OnlinePage });
