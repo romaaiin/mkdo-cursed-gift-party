@@ -45,6 +45,10 @@ create table public.mkdo_room_members (
 );
 create index mkdo_room_members_user_idx on public.mkdo_room_members(user_id);
 
+create or replace function public.mkdo_is_room_member(p_room_id uuid, p_user_id uuid)
+returns boolean language sql stable security definer set search_path = public
+as $ select exists(select 1 from public.mkdo_room_members m where m.room_id = p_room_id and m.user_id = p_user_id) $;
+
 alter table public.mkdo_profiles enable row level security;
 alter table public.mkdo_rooms enable row level security;
 alter table public.mkdo_room_members enable row level security;
@@ -56,13 +60,16 @@ create policy "profile owner can read" on public.mkdo_profiles
 -- Only members can read private room metadata and membership. Public waiting rooms are discoverable.
 create policy "members and public lobby can read rooms" on public.mkdo_rooms
   for select to authenticated using (
-    exists (select 1 from public.mkdo_room_members m where m.room_id = id and m.user_id = auth.uid())
+    public.mkdo_is_room_member(id, auth.uid())
     or (visibility = 'public' and status = 'waiting')
   );
 create policy "members can read room roster" on public.mkdo_room_members
   for select to authenticated using (
-    exists (select 1 from public.mkdo_room_members mine where mine.room_id = room_id and mine.user_id = auth.uid())
+    public.mkdo_is_room_member(room_id, auth.uid())
   );
+
+-- Never expose the complete game state (it contains private hands) to clients. Edge Functions use service_role.
+revoke select (game_state) on public.mkdo_rooms from anon, authenticated;
 
 -- No direct client INSERT/UPDATE/DELETE policies are intentionally provided.
 -- All room lifecycle and game-state mutations must go through trusted Edge Functions.
@@ -136,6 +143,7 @@ declare
   v_room public.mkdo_rooms%rowtype;
   v_id uuid;
   v_code text;
+  v_seat smallint;
 begin
   if auth.uid() is null then raise exception 'authentication_required'; end if;
   if char_length(trim(p_nickname)) not between 2 and 20 then raise exception 'invalid_nickname'; end if;
@@ -149,9 +157,12 @@ begin
     order by r.created_at
     for update skip locked limit 1;
   if found then
-    select coalesce(max(seat), -1) + 1 into v_id from public.mkdo_room_members where room_id = v_room.id;
+    select seat into v_seat from generate_series(0, v_room.max_players - 1) seat
+      where not exists(select 1 from public.mkdo_room_members m where m.room_id = v_room.id and m.seat = seat)
+      order by seat limit 1;
+    if v_seat is null then raise exception 'room_full'; end if;
     insert into public.mkdo_room_members(room_id, user_id, nickname, avatar, seat)
-    values(v_room.id, auth.uid(), trim(p_nickname), coalesce(nullif(p_avatar, ''), 'default'), v_id::smallint);
+    values(v_room.id, auth.uid(), trim(p_nickname), coalesce(nullif(p_avatar, ''), 'default'), v_seat);
     return query select v_room.id, v_room.code, false;
   else
     v_code := upper(substr(encode(gen_random_bytes(6), 'hex'), 1, 6));
