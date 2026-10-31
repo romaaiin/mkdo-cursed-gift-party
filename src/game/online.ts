@@ -12,8 +12,8 @@ export interface OnlineMember { user_id: string; nickname: string; avatar: strin
 export interface RoomSnapshot { room: OnlineRoom; members: OnlineMember[]; roomCode?: string; created?: boolean; userId: string; }
 
 // These are public client credentials. Environment variables may override them for previews/staging.
-const URL = ((import.meta.env.VITE_SUPABASE_URL as string | undefined) || "https://jjffnvexrnichsfayhnf.supabase.co").replace(/\/$/, "");
-const KEY = (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined) || "sb_publishable_T6T2SSSZZiFc-T_4tf9gxQ_lXrt3uAx";
+const URL = ((import.meta.env["VITE_SUPABASE_URL"] as string | undefined) || "https://jjffnvexrnichsfayhnf.supabase.co").replace(/\/$/, "");
+const KEY = (import.meta.env["VITE_SUPABASE_ANON_KEY"] as string | undefined) || "sb_publishable_T6T2SSSZZiFc-T_4tf9gxQ_lXrt3uAx";
 const SESSION_KEY = "mkdo-online-session-v1";
 export const isOnlineConfigured = () => Boolean(URL && KEY);
 export const loadOnlineSession = (): OnlineSession | null => {
