@@ -29,9 +29,10 @@ async function authRequest(path: string, body: unknown): Promise<OnlineSession> 
   if (!payload.expires_at && payload.expires_in) payload.expires_at = Math.floor(Date.now() / 1000) + payload.expires_in;
   saveOnlineSession(payload); return payload;
 }
-export const signInGuest = () => authRequest("signup", { data: { mode: "guest" } });
-export const signUpAccount = (email: string, password: string) => authRequest("signup", { email, password, data: { mode: "account" } });
-export const signInAccount = (email: string, password: string) => authRequest("token?grant_type=password", { email, password });
+const captchaSecurity = (captchaToken: string) => ({ gotrue_meta_security: { captcha_token: captchaToken } });
+export const signInGuest = (captchaToken: string) => authRequest("signup", { data: { mode: "guest" }, ...captchaSecurity(captchaToken) });
+export const signUpAccount = (email: string, password: string, captchaToken: string) => authRequest("signup", { email, password, data: { mode: "account" }, ...captchaSecurity(captchaToken) });
+export const signInAccount = (email: string, password: string, captchaToken: string) => authRequest("token?grant_type=password", { email, password, ...captchaSecurity(captchaToken) });
 
 async function freshSession(fallback: OnlineSession): Promise<OnlineSession> {
   const current = loadOnlineSession() ?? fallback;
