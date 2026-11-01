@@ -4,6 +4,7 @@ import background from "@/assets/lobby-background.jpg";
 import { Button } from "@/components/ui/button";
 import { Play, BookOpen, UserRound, History, Globe2 } from "lucide-react";
 import { SettingsControl } from "@/components/game/GameSettings";
+import { PlayerProfileMenu } from "@/components/game/PlayerProfileMenu";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -26,7 +27,7 @@ function Index() {
     <main className="landscape-shell">
       <div className="game-stage lobby-stage">
       <img src={background} alt="" className="table-art" />
-      <div className="lobby-settings"><SettingsControl /></div>
+      <div className="lobby-settings flex items-center gap-2"><PlayerProfileMenu /><SettingsControl /></div>
       <div className="lobby">
       <h1 className="lobby-title font-display text-primary text-outline">
         Maudits
