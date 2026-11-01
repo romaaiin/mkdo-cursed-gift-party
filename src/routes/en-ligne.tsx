@@ -5,8 +5,8 @@ import background from "@/assets/lobby-background.jpg";
 import { Button } from "@/components/ui/button";
 import { PlayerProfileMenu } from "@/components/game/PlayerProfileMenu";
 import { Input } from "@/components/ui/input";
-import { DEFAULT_PROFILE, loadLocal, parseProfile, PROFILE_KEY } from "@/game/profile";
-import { isOnlineConfigured, loadOnlineSession, roomApi, saveOnlineSession, signInAccount, signInGuest, signUpAccount, type OnlineSession, type RoomSnapshot } from "@/game/online";
+import { DEFAULT_PROFILE, loadLocal, parseProfile, PROFILE_KEY, saveLocal } from "@/game/profile";
+import { isOnlineConfigured, loadOnlineSession, loadCloudProfile, roomApi, saveOnlineSession, signInAccount, signInGuest, signUpAccount, type OnlineSession, type RoomSnapshot } from "@/game/online";
 
 declare global {
   interface Window {
@@ -107,6 +107,19 @@ function OnlinePage() {
   const [notice, setNotice] = useState("");
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [captchaResetKey, setCaptchaResetKey] = useState(0);
+  useEffect(() => {
+    if (!session) return;
+    let active = true;
+    loadCloudProfile(session).then(cloud => {
+      if (!active || !cloud) return;
+      const next = parseProfile(JSON.stringify({ name: cloud.nickname, avatar: cloud.avatar, motto: cloud.motto }));
+      setProfile(next);
+      saveLocal(PROFILE_KEY, next);
+    }).catch(() => {
+      // Keep the device-local profile available when cloud sync is temporarily unavailable.
+    });
+    return () => { active = false; };
+  }, [session]);
   const configured = isOnlineConfigured();
   const captchaConfigured = Boolean(TURNSTILE_SITE_KEY);
   const onCaptchaToken = useCallback((token: string | null) => setCaptchaToken(token), []);
