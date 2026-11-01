@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { ArrowLeft, Check } from "lucide-react";
 import { AVATARS, avatarUrl } from "@/components/game/card-art";
 import { DEFAULT_PROFILE, HISTORY_KEY, loadLocal, parseHistory, parseProfile, PROFILE_KEY, saveLocal } from "@/game/profile";
+import { loadOnlineSession, loadCloudProfile, saveCloudProfile } from "@/game/online";
 
 export const Route = createFileRoute("/compte")({
   head: () => ({
@@ -25,12 +26,53 @@ function Compte() {
   const [p, setP] = useState(DEFAULT_PROFILE);
   const [stats, setStats] = useState({ games: 0, wins: 0 });
   const [saved, setSaved] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState("");
   useEffect(() => {
-    setP(loadLocal(PROFILE_KEY, parseProfile));
+    let active = true;
+    const local = loadLocal(PROFILE_KEY, parseProfile);
+    setP(local);
     const h = loadLocal(HISTORY_KEY, parseHistory);
     setStats({ games: h.length, wins: h.filter(r => r.won).length });
+    const session = loadOnlineSession();
+    if (session) {
+      setSyncing(true);
+      loadCloudProfile(session).then(cloud => {
+        if (!active || !cloud) return;
+        const nextProfile = parseProfile(JSON.stringify({ name: cloud.nickname, avatar: cloud.avatar, motto: cloud.motto }));
+        setP(nextProfile);
+        saveLocal(PROFILE_KEY, nextProfile);
+        setSyncMessage("Profil récupéré depuis ton compte.");
+      }).catch(() => {
+        if (active) setSyncMessage("Synchronisation cloud indisponible. Le profil local est conservé.");
+      }).finally(() => { if (active) setSyncing(false); });
+    }
+    return () => { active = false; };
   }, []);
-  const save = () => { const clean = parseProfile(JSON.stringify(p)); setP(clean); saveLocal(PROFILE_KEY, clean); setSaved(true); };
+  const save = async () => {
+    const clean = parseProfile(JSON.stringify(p));
+    setP(clean);
+    saveLocal(PROFILE_KEY, clean);
+    const session = loadOnlineSession();
+    if (!session) {
+      setSaved(true);
+      setSyncMessage("Enregistré sur cet appareil. Connecte-toi pour synchroniser sur tes autres appareils.");
+      return;
+    }
+    setSyncing(true);
+    setSyncMessage("");
+    try {
+      const cloud = await saveCloudProfile(session, { nickname: clean.name, avatar: clean.avatar, motto: clean.motto });
+      const synced = parseProfile(JSON.stringify({ name: cloud.nickname, avatar: cloud.avatar, motto: cloud.motto }));
+      setP(synced);
+      saveLocal(PROFILE_KEY, synced);
+      setSaved(true);
+      setSyncMessage("Profil enregistré et synchronisé sur ton compte.");
+    } catch (error) {
+      setSaved(false);
+      setSyncMessage(error instanceof Error ? error.message : "Échec de la synchronisation. Le profil reste enregistré localement.");
+    } finally { setSyncing(false); }
+  };
   const edit = (patch: Partial<typeof p>) => { setP({ ...p, ...patch }); setSaved(false); };
   return (
     <main className="landscape-shell">
@@ -51,7 +93,8 @@ function Compte() {
                 <Input value={p.motto} maxLength={60} placeholder="Ex. : Toujours un cadeau d'avance" onChange={e => edit({ motto: e.target.value })} className="mt-1" />
               </label>
               <p className="text-xs text-muted-foreground">{stats.games} partie{stats.games > 1 ? "s" : ""} · {stats.wins} victoire{stats.wins > 1 ? "s" : ""}</p>
-              <Button className="btn-slime" onClick={save}>{saved ? <><Check />Enregistré</> : "Enregistrer"}</Button>
+              <Button className="btn-slime" onClick={() => void save()} disabled={syncing || p.name.trim().length < 2}>{syncing ? "Synchronisation…" : saved ? <><Check />Enregistré</> : "Enregistrer"}</Button>
+              {syncMessage && <p role="status" className="text-xs text-muted-foreground">{syncMessage}</p>}
             </div>
             <div>
               <p className="mb-2 font-display text-sm text-secondary">Photo de profil</p>
