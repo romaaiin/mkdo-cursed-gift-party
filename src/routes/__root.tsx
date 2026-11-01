@@ -118,6 +118,26 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
+  useEffect(() => {
+    // Supported browsers can lock orientation when the app is installed or fullscreen.
+    // Browsers that deny the request keep the existing CSS landscape-stage fallback.
+    const lockLandscape = () => {
+      const orientation = window.screen.orientation as ScreenOrientation & {
+        lock?: (value: "landscape") => Promise<void>;
+      };
+
+      if (typeof orientation?.lock === "function" && orientation.type.startsWith("portrait")) {
+        void orientation.lock("landscape").catch(() => {
+          // The browser may require an installed PWA, fullscreen mode, or user activation.
+        });
+      }
+    };
+
+    lockLandscape();
+    document.addEventListener("visibilitychange", lockLandscape);
+    return () => document.removeEventListener("visibilitychange", lockLandscape);
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
