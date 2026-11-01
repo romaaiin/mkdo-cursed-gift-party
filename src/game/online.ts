@@ -57,3 +57,44 @@ export async function roomApi<T>(session: OnlineSession, body: Record<string, un
   if (!response.ok) throw new Error(payload.error ?? "Erreur du service multijoueur");
   return payload;
 }
+
+export interface CloudPlayerProfile { nickname: string; avatar: string; motto: string; }
+
+async function profileRequest<T>(session: OnlineSession, path: string, init: RequestInit = {}): Promise<T> {
+  const activeSession = await freshSession(session);
+  const response = await fetch(URL + "/rest/v1/" + path, {
+    ...init,
+    headers: {
+      apikey: KEY,
+      Authorization: "Bearer " + activeSession.access_token,
+      "Content-Type": "application/json",
+      ...(init.headers ?? {}),
+    },
+  });
+  const payload = await response.json().catch(() => null) as T | { message?: string; details?: string } | null;
+  if (!response.ok) {
+    const message = payload && typeof payload === "object" && "message" in payload ? payload.message : null;
+    throw new Error(message || "Impossible de synchroniser le profil.");
+  }
+  return payload as T;
+}
+
+export async function loadCloudProfile(session: OnlineSession): Promise<CloudPlayerProfile | null> {
+  const rows = await profileRequest<CloudPlayerProfile[]>(
+    session,
+    "mkdo_profiles?select=nickname,avatar,motto&id=eq." + encodeURIComponent(session.user.id),
+  );
+  const row = rows[0];
+  return row ? { nickname: row.nickname, avatar: row.avatar, motto: row.motto ?? "" } : null;
+}
+
+export async function saveCloudProfile(session: OnlineSession, profile: CloudPlayerProfile): Promise<CloudPlayerProfile> {
+  const rows = await profileRequest<CloudPlayerProfile[]>(
+    session,
+    "rpc/mkdo_save_profile",
+    { method: "POST", body: JSON.stringify({ p_nickname: profile.nickname, p_avatar: profile.avatar, p_motto: profile.motto }) },
+  );
+  const saved = rows[0];
+  if (!saved) throw new Error("Le profil a été enregistré sans réponse exploitable.");
+  return { nickname: saved.nickname, avatar: saved.avatar, motto: saved.motto ?? "" };
+}
