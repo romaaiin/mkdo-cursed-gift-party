@@ -78,7 +78,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { title: "Maudits Cadeaux — le jeu mobile" },
       { name: "description", content: "Offre des Maudits Cadeaux et élimine tes adversaires." },
       { property: "og:type", content: "website" },
@@ -117,26 +117,6 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-
-  useEffect(() => {
-    // Supported browsers can lock orientation when the app is installed or fullscreen.
-    // Browsers that deny the request keep the existing CSS landscape-stage fallback.
-    const lockLandscape = () => {
-      const orientation = window.screen.orientation as ScreenOrientation & {
-        lock?: (value: "landscape") => Promise<void>;
-      };
-
-      if (typeof orientation?.lock === "function" && orientation.type.startsWith("portrait")) {
-        void orientation.lock("landscape").catch(() => {
-          // The browser may require an installed PWA, fullscreen mode, or user activation.
-        });
-      }
-    };
-
-    lockLandscape();
-    document.addEventListener("visibilitychange", lockLandscape);
-    return () => document.removeEventListener("visibilitychange", lockLandscape);
-  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
